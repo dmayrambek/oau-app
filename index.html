@@ -1,0 +1,1627 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>OAU — Задачи</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+
+:root {
+  --bg: #f8f7f4;
+  --surface: #ffffff;
+  --surface2: #f2f1ee;
+  --surface3: #e8e7e3;
+  --border: rgba(0,0,0,0.08);
+  --border2: rgba(0,0,0,0.14);
+  --text: #1a1a18;
+  --text2: #6b6b65;
+  --text3: #a8a8a2;
+  --accent: #2d4a3e;
+  --accent2: #4a7c6f;
+  --accent3: #7fb3a3;
+  --accent-light: #e8f0ee;
+  --gold: #c9974a;
+  --gold-light: #f7edd8;
+  --radius: 16px;
+  --radius-sm: 10px;
+  --radius-xs: 6px;
+  --shadow: 0 1px 3px rgba(0,0,0,0.08), 0 4px 12px rgba(0,0,0,0.04);
+  --shadow-lg: 0 8px 32px rgba(0,0,0,0.1);
+}
+
+body {
+  font-family: 'Inter', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+/* SCROLLBAR */
+::-webkit-scrollbar { width: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--surface3); border-radius: 99px; }
+
+/* LOGIN */
+#loginPage {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 2rem;
+  background: var(--bg);
+  position: relative;
+  overflow: hidden;
+}
+
+#loginPage::before {
+  content: '';
+  position: absolute;
+  width: 600px; height: 600px;
+  background: radial-gradient(circle, rgba(74,124,111,0.12) 0%, transparent 70%);
+  top: -100px; right: -100px;
+  pointer-events: none;
+}
+
+#loginPage::after {
+  content: '';
+  position: absolute;
+  width: 400px; height: 400px;
+  background: radial-gradient(circle, rgba(201,151,74,0.08) 0%, transparent 70%);
+  bottom: -50px; left: -50px;
+  pointer-events: none;
+}
+
+.login-wrap {
+  width: 100%; max-width: 420px;
+  position: relative; z-index: 1;
+}
+
+.login-brand {
+  text-align: center;
+  margin-bottom: 2.5rem;
+}
+
+.login-brand-mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 56px; height: 56px;
+  background: var(--accent);
+  border-radius: 16px;
+  margin-bottom: 1rem;
+  font-family: 'Syne', sans-serif;
+  font-size: 20px;
+  font-weight: 800;
+  color: #fff;
+  letter-spacing: -0.02em;
+}
+
+.login-brand-name {
+  font-family: 'Syne', sans-serif;
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: -0.03em;
+}
+
+.login-brand-sub {
+  font-size: 13px;
+  color: var(--text3);
+  margin-top: 4px;
+}
+
+.login-card {
+  background: var(--surface);
+  border-radius: 24px;
+  padding: 2.5rem;
+  box-shadow: var(--shadow-lg);
+  border: 1px solid var(--border);
+}
+
+.login-title {
+  font-family: 'Syne', sans-serif;
+  font-size: 18px;
+  font-weight: 700;
+  margin-bottom: 0.25rem;
+  letter-spacing: -0.02em;
+}
+
+.login-sub { color: var(--text3); font-size: 13px; margin-bottom: 1.75rem; }
+
+/* SAVED ACCOUNTS */
+.saved-accounts {
+  margin-bottom: 1.25rem;
+}
+
+.saved-account-btn {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  background: var(--accent-light);
+  border: 1px solid rgba(74,124,111,0.2);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all 0.15s;
+  margin-bottom: 6px;
+  text-align: left;
+}
+
+.saved-account-btn:hover { background: rgba(74,124,111,0.15); border-color: var(--accent2); }
+
+.saved-avatar {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 600;
+  flex-shrink: 0;
+}
+
+.saved-name { font-size: 13px; font-weight: 600; color: var(--text); }
+.saved-login { font-size: 11px; color: var(--text3); }
+
+.divider {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin: 1.25rem 0;
+  color: var(--text3);
+  font-size: 12px;
+}
+
+.divider::before, .divider::after {
+  content: '';
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+
+.field { margin-bottom: 1rem; }
+
+.field label {
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text2);
+  margin-bottom: 6px;
+}
+
+.field input {
+  width: 100%;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  color: var(--text);
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  padding: 11px 14px;
+  outline: none;
+  transition: all 0.15s;
+}
+
+.field input:focus {
+  border-color: var(--accent2);
+  background: var(--surface);
+  box-shadow: 0 0 0 3px rgba(74,124,111,0.1);
+}
+
+.field input::placeholder { color: var(--text3); }
+
+.save-check {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 1.25rem;
+  cursor: pointer;
+  font-size: 13px;
+  color: var(--text2);
+}
+
+.save-check input[type=checkbox] {
+  width: 16px; height: 16px;
+  accent-color: var(--accent);
+  cursor: pointer;
+}
+
+.btn-login-main {
+  width: 100%;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  padding: 12px;
+  cursor: pointer;
+  transition: all 0.15s;
+  letter-spacing: 0.01em;
+}
+
+.btn-login-main:hover { background: var(--accent2); }
+.btn-login-main:active { transform: scale(0.99); }
+
+.login-error {
+  color: #dc2626;
+  font-size: 12px;
+  margin-top: 10px;
+  text-align: center;
+  display: none;
+}
+
+/* APP LAYOUT */
+#appPage { display: none; min-height: 100vh; }
+
+.app-layout {
+  display: flex;
+  min-height: 100vh;
+}
+
+/* SIDEBAR */
+.sidebar {
+  width: 260px;
+  background: var(--accent);
+  display: flex;
+  flex-direction: column;
+  padding: 1.5rem 1rem;
+  position: fixed;
+  top: 0; left: 0; bottom: 0;
+  z-index: 10;
+  overflow-y: auto;
+}
+
+.sidebar-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 0 0.5rem;
+  margin-bottom: 2rem;
+}
+
+.sidebar-brand-mark {
+  width: 36px; height: 36px;
+  background: rgba(255,255,255,0.15);
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Syne', sans-serif;
+  font-size: 14px; font-weight: 800;
+  color: #fff;
+}
+
+.sidebar-brand-name {
+  font-family: 'Syne', sans-serif;
+  font-size: 16px; font-weight: 700;
+  color: #fff;
+  letter-spacing: -0.02em;
+}
+
+.sidebar-user {
+  background: rgba(255,255,255,0.1);
+  border-radius: var(--radius-sm);
+  padding: 12px;
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.sidebar-user-avatar {
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.2);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; font-weight: 600;
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.sidebar-user-name {
+  font-size: 13px; font-weight: 600;
+  color: #fff;
+  line-height: 1.3;
+}
+
+.sidebar-user-role {
+  font-size: 11px;
+  color: rgba(255,255,255,0.6);
+}
+
+.nav-label {
+  font-size: 10px; font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(255,255,255,0.4);
+  padding: 0 0.5rem;
+  margin-bottom: 6px;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  border-radius: var(--radius-xs);
+  color: rgba(255,255,255,0.7);
+  font-size: 13px; font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+  margin-bottom: 2px;
+  border: none; background: none;
+  width: 100%; text-align: left;
+}
+
+.nav-item:hover { color: #fff; background: rgba(255,255,255,0.1); }
+
+.nav-item.active {
+  color: #fff;
+  background: rgba(255,255,255,0.18);
+}
+
+.nav-item .ni { font-size: 15px; width: 18px; text-align: center; }
+
+.sidebar-sep {
+  height: 1px;
+  background: rgba(255,255,255,0.1);
+  margin: 1rem 0;
+}
+
+.sidebar-bottom { margin-top: auto; }
+
+.logout-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 10px 12px;
+  border-radius: var(--radius-xs);
+  color: rgba(255,255,255,0.5);
+  font-size: 12px;
+  cursor: pointer;
+  transition: all 0.15s;
+  border: none; background: none;
+}
+
+.logout-btn:hover { color: rgba(255,255,255,0.9); background: rgba(255,255,255,0.08); }
+
+/* MAIN */
+.main {
+  margin-left: 260px;
+  flex: 1;
+  padding: 2.5rem;
+  min-height: 100vh;
+}
+
+.page-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  margin-bottom: 2rem;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.page-title {
+  font-family: 'Syne', sans-serif;
+  font-size: 24px; font-weight: 700;
+  letter-spacing: -0.03em;
+  color: var(--text);
+}
+
+.page-sub { font-size: 13px; color: var(--text3); margin-top: 2px; }
+
+/* CARDS */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.5rem;
+  box-shadow: var(--shadow);
+}
+
+/* STATS ROW */
+.stats-row {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+  gap: 12px;
+  margin-bottom: 1.5rem;
+}
+
+.stat-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 1.25rem;
+  box-shadow: var(--shadow);
+}
+
+.stat-num {
+  font-family: 'Syne', sans-serif;
+  font-size: 28px; font-weight: 700;
+  letter-spacing: -0.03em;
+  color: var(--text);
+  margin-bottom: 2px;
+}
+
+.stat-label { font-size: 12px; color: var(--text3); }
+
+/* TASK FORM */
+.task-form {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1.5rem;
+  box-shadow: var(--shadow);
+  margin-bottom: 1.5rem;
+}
+
+.form-title {
+  font-family: 'Syne', sans-serif;
+  font-size: 15px; font-weight: 700;
+  margin-bottom: 1.25rem;
+  letter-spacing: -0.02em;
+}
+
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.form-grid-3 {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.f-label {
+  display: block;
+  font-size: 11px; font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--text2);
+  margin-bottom: 5px;
+}
+
+.f-input, .f-select, .f-textarea {
+  width: 100%;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-xs);
+  color: var(--text);
+  font-family: 'Inter', sans-serif;
+  font-size: 13px;
+  padding: 9px 12px;
+  outline: none;
+  transition: all 0.15s;
+}
+
+.f-input:focus, .f-select:focus, .f-textarea:focus {
+  border-color: var(--accent2);
+  background: var(--surface);
+  box-shadow: 0 0 0 3px rgba(74,124,111,0.08);
+}
+
+.f-input::placeholder, .f-textarea::placeholder { color: var(--text3); }
+
+.f-textarea { resize: vertical; min-height: 80px; }
+
+/* BUTTONS */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 9px 16px;
+  border-radius: var(--radius-xs);
+  border: 1px solid var(--border2);
+  background: var(--surface);
+  color: var(--text);
+  font-family: 'Inter', sans-serif;
+  font-size: 13px; font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+  white-space: nowrap;
+}
+
+.btn:hover { background: var(--surface2); }
+.btn:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.btn-primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
+.btn-primary:hover { background: var(--accent2); border-color: var(--accent2); }
+
+.btn-ghost {
+  border-color: transparent;
+  background: transparent;
+  color: var(--text2);
+}
+
+.btn-ghost:hover { background: var(--surface2); color: var(--text); }
+
+.btn-danger { color: #dc2626; border-color: rgba(220,38,38,0.2); }
+.btn-danger:hover { background: rgba(220,38,38,0.06); }
+
+.btn-sm { padding: 6px 12px; font-size: 12px; }
+
+/* STATUS BADGES */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 10px;
+  border-radius: 99px;
+  font-size: 11px; font-weight: 600;
+  white-space: nowrap;
+}
+
+.badge-open { background: #fef3c7; color: #92400e; }
+.badge-work { background: #dbeafe; color: #1e40af; }
+.badge-done { background: #d1fae5; color: #065f46; }
+.badge-pause { background: #f3e8ff; color: #6b21a8; }
+
+/* TASKS LIST */
+.tasks-list { display: flex; flex-direction: column; gap: 8px; }
+
+.task-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 1rem 1.25rem;
+  box-shadow: var(--shadow);
+  transition: all 0.15s;
+  cursor: pointer;
+}
+
+.task-card:hover { box-shadow: var(--shadow-lg); border-color: var(--border2); }
+.task-card.done-card { opacity: 0.7; }
+
+.task-top {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+}
+
+.task-name {
+  font-size: 14px; font-weight: 600;
+  color: var(--text);
+  line-height: 1.4;
+}
+
+.task-meta {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.task-type-tag {
+  font-size: 11px;
+  color: var(--text3);
+  background: var(--surface2);
+  padding: 2px 8px;
+  border-radius: 99px;
+  border: 1px solid var(--border);
+}
+
+.task-hours {
+  font-size: 12px;
+  color: var(--gold);
+  font-weight: 600;
+  background: var(--gold-light);
+  padding: 2px 8px;
+  border-radius: 99px;
+}
+
+.task-date { font-size: 11px; color: var(--text3); }
+
+.task-desc {
+  font-size: 12px;
+  color: var(--text2);
+  margin-top: 6px;
+  line-height: 1.5;
+}
+
+.task-actions {
+  display: flex;
+  gap: 4px;
+  opacity: 0;
+  transition: opacity 0.15s;
+}
+
+.task-card:hover .task-actions { opacity: 1; }
+
+/* FILTERS */
+.filters-row {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 1.25rem;
+  flex-wrap: wrap;
+  align-items: center;
+}
+
+.filter-chip {
+  padding: 6px 14px;
+  border-radius: 99px;
+  border: 1px solid var(--border2);
+  background: var(--surface);
+  color: var(--text2);
+  font-size: 12px; font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.filter-chip:hover { border-color: var(--accent2); color: var(--accent); }
+
+.filter-chip.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
+/* ARCHIVE */
+.archive-month {
+  margin-bottom: 1.5rem;
+}
+
+.archive-month-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background: var(--surface2);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  margin-bottom: 8px;
+  border: 1px solid var(--border);
+  transition: all 0.15s;
+}
+
+.archive-month-header:hover { background: var(--surface3); }
+
+.archive-month-title {
+  font-family: 'Syne', sans-serif;
+  font-size: 14px; font-weight: 700;
+  letter-spacing: -0.02em;
+}
+
+.archive-month-count {
+  font-size: 12px;
+  color: var(--text3);
+}
+
+/* ADMIN PANEL */
+.emp-tabs {
+  display: flex;
+  gap: 6px;
+  margin-bottom: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.emp-tab {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  padding: 8px 14px;
+  border-radius: 99px;
+  border: 1px solid var(--border2);
+  background: var(--surface);
+  color: var(--text2);
+  font-size: 12px; font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.emp-tab:hover { border-color: var(--accent2); color: var(--accent); }
+
+.emp-tab.active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+}
+
+.emp-tab .et-avatar {
+  width: 20px; height: 20px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.3);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 9px; font-weight: 700;
+}
+
+.emp-tab.active .et-avatar { background: rgba(255,255,255,0.25); }
+
+/* MODAL */
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.4);
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  backdrop-filter: blur(4px);
+}
+
+.modal {
+  background: var(--surface);
+  border-radius: 20px;
+  padding: 2rem;
+  width: 100%;
+  max-width: 520px;
+  box-shadow: var(--shadow-lg);
+  max-height: 90vh;
+  overflow-y: auto;
+}
+
+.modal-title {
+  font-family: 'Syne', sans-serif;
+  font-size: 18px; font-weight: 700;
+  letter-spacing: -0.02em;
+  margin-bottom: 1.5rem;
+}
+
+.modal-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 1.5rem;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border);
+}
+
+/* EMPTY */
+.empty {
+  text-align: center;
+  padding: 3rem 1rem;
+  color: var(--text3);
+}
+
+.empty-icon { font-size: 40px; margin-bottom: 12px; }
+.empty-title { font-size: 15px; font-weight: 600; color: var(--text2); margin-bottom: 4px; }
+.empty-sub { font-size: 13px; }
+
+/* MONTH BANNER */
+.month-banner {
+  background: linear-gradient(135deg, var(--accent) 0%, var(--accent2) 100%);
+  border-radius: var(--radius);
+  padding: 1.5rem;
+  color: #fff;
+  margin-bottom: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.month-banner-title {
+  font-family: 'Syne', sans-serif;
+  font-size: 20px; font-weight: 700;
+  letter-spacing: -0.03em;
+}
+
+.month-banner-sub { font-size: 13px; opacity: 0.7; margin-top: 2px; }
+
+/* MOBILE */
+@media (max-width: 768px) {
+  .sidebar { display: none; }
+  .main { margin-left: 0; padding: 1.25rem; padding-bottom: 80px; }
+  .mobile-nav { display: flex !important; }
+  .form-grid, .form-grid-3 { grid-template-columns: 1fr; }
+}
+
+.mobile-nav {
+  display: none;
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  background: var(--surface);
+  border-top: 1px solid var(--border);
+  z-index: 10;
+  padding: 8px 0 4px;
+  box-shadow: 0 -4px 20px rgba(0,0,0,0.08);
+}
+
+.mobile-nav-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  font-size: 10px;
+  color: var(--text3);
+  cursor: pointer;
+  padding: 4px;
+  border: none;
+  background: none;
+  transition: color 0.15s;
+}
+
+.mobile-nav-item.active { color: var(--accent); }
+.mobile-nav-item .ni { font-size: 20px; }
+
+/* ANIM */
+.fade-in { animation: fadeIn 0.2s ease; }
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.page { display: none; }
+.page.active { display: block; }
+</style>
+</head>
+<body>
+
+<!-- LOGIN PAGE -->
+<div id="loginPage">
+  <div class="login-wrap">
+    <div class="login-brand">
+      <div class="login-brand-mark">OAU</div>
+      <div class="login-brand-name">Трекер задач</div>
+      <div class="login-brand-sub">Управление задачами команды</div>
+    </div>
+    <div class="login-card">
+      <div class="login-title">Вход в систему</div>
+      <div class="login-sub">Введите данные для входа</div>
+
+      <div id="savedAccountsBlock" class="saved-accounts" style="display:none;">
+        <div id="savedAccountsList"></div>
+        <div class="divider">или войти с другим аккаунтом</div>
+      </div>
+
+      <div class="field">
+        <label>Логин</label>
+        <input type="text" id="loginInput" placeholder="Введите логин" autocomplete="username">
+      </div>
+      <div class="field">
+        <label>Пароль</label>
+        <input type="password" id="passInput" placeholder="Введите пароль" autocomplete="current-password">
+      </div>
+      <label class="save-check">
+        <input type="checkbox" id="saveAccountCheck" checked>
+        Запомнить меня на этом устройстве
+      </label>
+      <button class="btn-login-main" onclick="doLogin()">Войти →</button>
+      <div class="login-error" id="loginError">Неверный логин или пароль</div>
+    </div>
+  </div>
+</div>
+
+<!-- APP PAGE -->
+<div id="appPage">
+  <div class="app-layout">
+
+    <!-- SIDEBAR -->
+    <nav class="sidebar">
+      <div class="sidebar-brand">
+        <div class="sidebar-brand-mark">OAU</div>
+        <div class="sidebar-brand-name">Трекер</div>
+      </div>
+
+      <div class="sidebar-user">
+        <div class="sidebar-user-avatar" id="sidebarAvatar"></div>
+        <div>
+          <div class="sidebar-user-name" id="sidebarName"></div>
+          <div class="sidebar-user-role" id="sidebarRole"></div>
+        </div>
+      </div>
+
+      <div class="nav-label">Меню</div>
+      <button class="nav-item active" onclick="showPage('tasks', this)" id="navTasks">
+        <span class="ni">✦</span> Мои задачи
+      </button>
+      <button class="nav-item" onclick="showPage('archive', this)" id="navArchive">
+        <span class="ni">◫</span> Архив
+      </button>
+      <div id="adminNav" style="display:none;">
+        <div class="sidebar-sep"></div>
+        <div class="nav-label">Администратор</div>
+        <button class="nav-item" onclick="showPage('admin', this)">
+          <span class="ni">⊞</span> Все сотрудники
+        </button>
+        <button class="nav-item" onclick="showPage('adminStats', this)">
+          <span class="ni">◎</span> Статистика
+        </button>
+      </div>
+      <div class="sidebar-bottom">
+        <div class="sidebar-sep"></div>
+        <button class="logout-btn" onclick="doLogout()">⎋ Выйти</button>
+      </div>
+    </nav>
+
+    <!-- MOBILE NAV -->
+    <div class="mobile-nav" id="mobileNav">
+      <button class="mobile-nav-item active" onclick="showPage('tasks', this)"><span class="ni">✦</span><span>Задачи</span></button>
+      <button class="mobile-nav-item" onclick="showPage('archive', this)"><span class="ni">◫</span><span>Архив</span></button>
+      <button class="mobile-nav-item" id="mobileAdminBtn" style="display:none;" onclick="showPage('admin', this)"><span class="ni">⊞</span><span>Команда</span></button>
+      <button class="mobile-nav-item" onclick="doLogout()"><span class="ni">⎋</span><span>Выйти</span></button>
+    </div>
+
+    <main class="main">
+
+      <!-- TASKS PAGE -->
+      <div id="pg-tasks" class="page active fade-in">
+        <div class="page-header">
+          <div>
+            <h2 class="page-title" id="tasksPageTitle">Мои задачи</h2>
+            <p class="page-sub" id="tasksPageSub"></p>
+          </div>
+          <button class="btn btn-primary" onclick="openTaskModal()">+ Новая задача</button>
+        </div>
+
+        <div class="stats-row" id="tasksStats"></div>
+
+        <div class="filters-row" id="statusFilters">
+          <span class="filter-chip active" onclick="filterByStatus('', this)">Все</span>
+          <span class="filter-chip" onclick="filterByStatus('open', this)">Открытые</span>
+          <span class="filter-chip" onclick="filterByStatus('work', this)">В работе</span>
+          <span class="filter-chip" onclick="filterByStatus('pause', this)">На паузе</span>
+          <span class="filter-chip" onclick="filterByStatus('done', this)">Выполнено</span>
+        </div>
+
+        <div id="tasksList" class="tasks-list"></div>
+      </div>
+
+      <!-- ARCHIVE PAGE -->
+      <div id="pg-archive" class="page fade-in">
+        <div class="page-header">
+          <div>
+            <h2 class="page-title">Архив задач</h2>
+            <p class="page-sub">Задачи прошлых месяцев</p>
+          </div>
+        </div>
+        <div id="archiveContent"></div>
+      </div>
+
+      <!-- ADMIN PAGE -->
+      <div id="pg-admin" class="page fade-in">
+        <div class="page-header">
+          <div>
+            <h2 class="page-title">Все сотрудники</h2>
+            <p class="page-sub">Задачи команды за текущий месяц</p>
+          </div>
+        </div>
+        <div class="emp-tabs" id="empTabs"></div>
+        <div id="adminTasksList" class="tasks-list"></div>
+      </div>
+
+      <!-- ADMIN STATS PAGE -->
+      <div id="pg-adminStats" class="page fade-in">
+        <div class="page-header">
+          <div>
+            <h2 class="page-title">Статистика</h2>
+            <p class="page-sub">Сводка по команде</p>
+          </div>
+          <button class="btn btn-primary" onclick="exportExcel()">⬇ Excel</button>
+        </div>
+        <div class="filters-row">
+          <select class="f-select" id="statsMonthFilter" onchange="renderAdminStats()" style="width:auto; padding:7px 12px;">
+          </select>
+        </div>
+        <div id="adminStatsContent"></div>
+      </div>
+
+    </main>
+  </div>
+</div>
+
+<!-- TASK MODAL -->
+<div id="taskModal" class="modal-overlay" style="display:none;" onclick="closeModalOutside(event)">
+  <div class="modal">
+    <div class="modal-title" id="modalTitle">Новая задача</div>
+    <div class="field">
+      <label class="f-label">Название задачи</label>
+      <input type="text" class="f-input" id="tName" placeholder="Что нужно сделать?">
+    </div>
+    <div class="form-grid">
+      <div class="field">
+        <label class="f-label">Тип задачи</label>
+        <input type="text" class="f-input" id="tType" placeholder="Напишите тип..." list="typesList">
+        <datalist id="typesList"></datalist>
+      </div>
+      <div class="field">
+        <label class="f-label">Статус</label>
+        <select class="f-select" id="tStatus">
+          <option value="open">Открытый</option>
+          <option value="work">В работе</option>
+          <option value="pause">На паузе</option>
+          <option value="done">Выполнено</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-grid">
+      <div class="field">
+        <label class="f-label">Затрачено часов</label>
+        <input type="number" class="f-input" id="tHours" placeholder="0" min="0" step="0.5">
+      </div>
+      <div class="field">
+        <label class="f-label">Глобальность</label>
+        <select class="f-select" id="tGlobal">
+          <option value="global">Глобальная</option>
+          <option value="local">Не глобальная</option>
+        </select>
+      </div>
+    </div>
+    <div class="field">
+      <label class="f-label">Описание (необязательно)</label>
+      <textarea class="f-textarea" id="tDesc" placeholder="Дополнительные детали..."></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeModal()">Отмена</button>
+      <button class="btn btn-primary" onclick="saveTask()" id="saveTaskBtn">Сохранить</button>
+    </div>
+  </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, collection, addDoc, getDocs, deleteDoc, updateDoc, doc, query, orderBy, where } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyCqivWIV1G68qZO7XFwCcEQAek9d7otxPY",
+  authDomain: "bo-app-40be5.firebaseapp.com",
+  projectId: "bo-app-40be5",
+  storageBucket: "bo-app-40be5.firebasestorage.app",
+  messagingSenderId: "736090343662",
+  appId: "1:736090343662:web:270e3b25e684e73da34bff"
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
+
+const USERS = {
+  'aitumara':  { name: 'Алымова Айтумар',       pass: 'aitumaraa',   role: 'employee' },
+  'boitumara': { name: 'Алымова Бойтумар',       pass: 'boitumaraa',  role: 'employee' },
+  'sezimd':    { name: 'Джолдошбекова Сезим',    pass: 'sezimdd',     role: 'employee' },
+  'tumarao':   { name: 'Омурбекова Тумара',      pass: 'tumaraoo',    role: 'employee' },
+  'eldiyarr':  { name: 'Рысбеков Элдияр',        pass: 'eldiyarrr',   role: 'employee' },
+  'samarach':  { name: 'Чекирова Самара',        pass: 'samarachch',  role: 'employee' },
+  'admin':     { name: 'Руководитель',           pass: 'admind',      role: 'admin' }
+};
+
+const MONTHS_RU = ['Январь','Февраль','Март','Апрель','Май','Июнь','Июль','Август','Сентябрь','Октябрь','Ноябрь','Декабрь'];
+const STATUS_MAP = { open: 'Открытый', work: 'В работе', done: 'Выполнено', pause: 'На паузе' };
+const GLOBAL_MAP = { global: 'Глобальная', local: 'Не глобальная' };
+
+let currentUser = null;
+let tasks = [];
+let editingTaskId = null;
+let activeFilter = '';
+let activeEmpFilter = null;
+
+function getMonthKey(date) {
+  const d = new Date(date);
+  return d.getFullYear() + '-' + String(d.getMonth()+1).padStart(2,'0');
+}
+
+function getCurrentMonthKey() {
+  const now = new Date();
+  return now.getFullYear() + '-' + String(now.getMonth()+1).padStart(2,'0');
+}
+
+function getInitials(name) {
+  return name.split(' ').slice(0,2).map(w=>w[0]).join('').toUpperCase();
+}
+
+function getBadgeClass(status) {
+  return { open: 'badge-open', work: 'badge-work', done: 'badge-done', pause: 'badge-pause' }[status] || 'badge-open';
+}
+
+// SAVED ACCOUNTS
+function loadSavedAccounts() {
+  try {
+    const saved = JSON.parse(localStorage.getItem('oau_saved_accounts') || '[]');
+    if (saved.length) {
+      document.getElementById('savedAccountsBlock').style.display = 'block';
+      const list = document.getElementById('savedAccountsList');
+      list.innerHTML = saved.map(a => `
+        <button class="saved-account-btn" onclick="quickLogin('${a.login}')">
+          <div class="saved-avatar">${getInitials(USERS[a.login]?.name || a.login)}</div>
+          <div>
+            <div class="saved-name">${USERS[a.login]?.name || a.login}</div>
+            <div class="saved-login">${a.login}</div>
+          </div>
+          <span style="margin-left:auto; font-size:12px; color:var(--text3);">→</span>
+        </button>`).join('');
+    }
+  } catch(e) {}
+}
+
+function quickLogin(login) {
+  const saved = JSON.parse(localStorage.getItem('oau_saved_accounts') || '[]');
+  const acc = saved.find(a => a.login === login);
+  if (acc) {
+    loginAs(login);
+  }
+}
+
+function saveAccount(login) {
+  try {
+    let saved = JSON.parse(localStorage.getItem('oau_saved_accounts') || '[]');
+    if (!saved.find(a => a.login === login)) {
+      saved.push({ login });
+      localStorage.setItem('oau_saved_accounts', JSON.stringify(saved));
+    }
+  } catch(e) {}
+}
+
+function loginAs(login) {
+  const user = USERS[login];
+  if (!user) return;
+  currentUser = { login, ...user };
+  localStorage.setItem('oau_session', login);
+  startApp();
+}
+
+function doLogin() {
+  const l = document.getElementById('loginInput').value.trim().toLowerCase();
+  const p = document.getElementById('passInput').value;
+  const save = document.getElementById('saveAccountCheck').checked;
+  const user = USERS[l];
+  if (user && user.pass === p) {
+    if (save) saveAccount(l);
+    loginAs(l);
+  } else {
+    document.getElementById('loginError').style.display = 'block';
+    document.getElementById('passInput').value = '';
+  }
+}
+
+function doLogout() {
+  localStorage.removeItem('oau_session');
+  currentUser = null;
+  tasks = [];
+  document.getElementById('appPage').style.display = 'none';
+  document.getElementById('loginPage').style.display = 'flex';
+  document.getElementById('loginInput').value = '';
+  document.getElementById('passInput').value = '';
+  loadSavedAccounts();
+}
+
+async function startApp() {
+  document.getElementById('loginPage').style.display = 'none';
+  document.getElementById('appPage').style.display = 'block';
+
+  document.getElementById('sidebarAvatar').textContent = getInitials(currentUser.name);
+  document.getElementById('sidebarName').textContent = currentUser.name;
+  document.getElementById('sidebarRole').textContent = currentUser.role === 'admin' ? 'Администратор' : 'Сотрудник';
+
+  if (currentUser.role === 'admin') {
+    document.getElementById('adminNav').style.display = 'block';
+    document.getElementById('mobileAdminBtn').style.display = 'flex';
+  }
+
+  await loadTasks();
+  renderTasks();
+  renderStats();
+  updateTypeSuggestions();
+}
+
+async function loadTasks() {
+  try {
+    let q;
+    if (currentUser.role === 'admin') {
+      q = query(collection(db, 'oau_tasks'), orderBy('createdAt', 'desc'));
+    } else {
+      q = query(collection(db, 'oau_tasks'), where('userId', '==', currentUser.login), orderBy('createdAt', 'desc'));
+    }
+    const snap = await getDocs(q);
+    tasks = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  } catch(e) { tasks = []; }
+}
+
+function getCurrentMonthTasks(userId) {
+  const curKey = getCurrentMonthKey();
+  return tasks.filter(t => {
+    const mk = getMonthKey(t.createdAt);
+    const matchMonth = mk === curKey;
+    const matchUser = userId ? t.userId === userId : (currentUser.role !== 'admin' ? t.userId === currentUser.login : true);
+    return matchMonth && matchUser;
+  });
+}
+
+function renderStats() {
+  const cur = getCurrentMonthTasks();
+  const totalHours = cur.reduce((s,t) => s + (parseFloat(t.hours)||0), 0);
+  const done = cur.filter(t => t.status === 'done').length;
+  const inWork = cur.filter(t => t.status === 'work').length;
+
+  document.getElementById('tasksStats').innerHTML = `
+    <div class="stat-card">
+      <div class="stat-num">${cur.length}</div>
+      <div class="stat-label">Задач в этом месяце</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num">${totalHours % 1 === 0 ? totalHours : totalHours.toFixed(1)}</div>
+      <div class="stat-label">Часов затрачено</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num">${done}</div>
+      <div class="stat-label">Выполнено</div>
+    </div>
+    <div class="stat-card">
+      <div class="stat-num">${inWork}</div>
+      <div class="stat-label">В работе</div>
+    </div>`;
+}
+
+function renderTasks() {
+  const curKey = getCurrentMonthKey();
+  const now = new Date();
+  const monthName = MONTHS_RU[now.getMonth()] + ' ' + now.getFullYear();
+
+  document.getElementById('tasksPageSub').textContent = monthName;
+
+  let list = tasks.filter(t => {
+    const mk = getMonthKey(t.createdAt);
+    const matchMonth = mk === curKey;
+    const matchUser = currentUser.role !== 'admin' ? t.userId === currentUser.login : true;
+    const matchStatus = activeFilter ? t.status === activeFilter : true;
+    return matchMonth && matchUser && matchStatus;
+  });
+
+  const el = document.getElementById('tasksList');
+  if (!list.length) {
+    el.innerHTML = `<div class="empty"><div class="empty-icon">✦</div><div class="empty-title">Задач пока нет</div><div class="empty-sub">Нажмите «Новая задача» чтобы добавить</div></div>`;
+    return;
+  }
+
+  el.innerHTML = list.map(t => taskCardHTML(t)).join('');
+}
+
+function taskCardHTML(t) {
+  const badge = `<span class="badge ${getBadgeClass(t.status)}">${STATUS_MAP[t.status]||t.status}</span>`;
+  const hours = t.hours ? `<span class="task-hours">⏱ ${t.hours}ч</span>` : '';
+  const typeTag = t.type ? `<span class="task-type-tag">${t.type}</span>` : '';
+  const globalTag = `<span class="task-type-tag">${GLOBAL_MAP[t.global]||t.global}</span>`;
+  const desc = t.desc ? `<div class="task-desc">${t.desc}</div>` : '';
+  const empName = currentUser.role === 'admin' ? `<span class="task-type-tag">👤 ${USERS[t.userId]?.name||t.userId}</span>` : '';
+
+  return `<div class="task-card ${t.status==='done'?'done-card':''}">
+    <div class="task-top">
+      <div style="flex:1; min-width:0;">
+        <div class="task-name">${t.name}</div>
+        <div class="task-meta" style="margin-top:6px;">
+          ${badge} ${typeTag} ${globalTag} ${hours} ${empName}
+        </div>
+        ${desc}
+      </div>
+      <div class="task-actions">
+        <button class="btn btn-sm btn-ghost" onclick="openEditModal('${t.id}')">✎</button>
+        <button class="btn btn-sm btn-danger" onclick="deleteTask('${t.id}')">✕</button>
+      </div>
+    </div>
+    <div class="task-date" style="margin-top:6px;">${new Date(t.createdAt).toLocaleDateString('ru-RU')}</div>
+  </div>`;
+}
+
+function filterByStatus(status, el) {
+  activeFilter = status;
+  document.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  renderTasks();
+}
+
+// ARCHIVE
+function renderArchive() {
+  const curKey = getCurrentMonthKey();
+  const userTasks = currentUser.role === 'admin' ? tasks : tasks.filter(t => t.userId === currentUser.login);
+  const archiveTasks = userTasks.filter(t => getMonthKey(t.createdAt) !== curKey);
+
+  const byMonth = {};
+  archiveTasks.forEach(t => {
+    const mk = getMonthKey(t.createdAt);
+    if (!byMonth[mk]) byMonth[mk] = [];
+    byMonth[mk].push(t);
+  });
+
+  const months = Object.keys(byMonth).sort().reverse();
+  const el = document.getElementById('archiveContent');
+
+  if (!months.length) {
+    el.innerHTML = `<div class="empty"><div class="empty-icon">◫</div><div class="empty-title">Архив пуст</div><div class="empty-sub">Задачи прошлых месяцев появятся здесь</div></div>`;
+    return;
+  }
+
+  el.innerHTML = months.map(mk => {
+    const [y, mo] = mk.split('-');
+    const name = MONTHS_RU[parseInt(mo)-1] + ' ' + y;
+    const list = byMonth[mk];
+    const hours = list.reduce((s,t) => s+(parseFloat(t.hours)||0), 0);
+    return `<div class="archive-month">
+      <div class="archive-month-header" onclick="toggleArchiveMonth('arch-${mk}')">
+        <div>
+          <div class="archive-month-title">${name}</div>
+          <div class="archive-month-count">${list.length} задач · ${hours%1===0?hours:hours.toFixed(1)} ч</div>
+        </div>
+        <span id="arch-arrow-${mk}">▼</span>
+      </div>
+      <div id="arch-${mk}" class="tasks-list" style="display:none;">
+        ${list.map(t => taskCardHTML(t)).join('')}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function toggleArchiveMonth(id) {
+  const el = document.getElementById(id);
+  const mk = id.replace('arch-', '');
+  const arrow = document.getElementById('arch-arrow-'+mk);
+  if (el.style.display === 'none') {
+    el.style.display = 'flex';
+    el.style.flexDirection = 'column';
+    el.style.gap = '8px';
+    if (arrow) arrow.textContent = '▲';
+  } else {
+    el.style.display = 'none';
+    if (arrow) arrow.textContent = '▼';
+  }
+}
+
+// ADMIN
+function renderAdmin() {
+  const employees = Object.entries(USERS).filter(([k,v]) => v.role === 'employee');
+  const tabs = document.getElementById('empTabs');
+
+  if (!activeEmpFilter) activeEmpFilter = employees[0]?.[0] || null;
+
+  tabs.innerHTML = employees.map(([login, u]) => {
+    const cnt = getCurrentMonthTasks(login).length;
+    return `<button class="emp-tab ${activeEmpFilter===login?'active':''}" onclick="setEmpFilter('${login}', this)">
+      <div class="et-avatar">${getInitials(u.name)}</div>
+      ${u.name.split(' ')[0]} <span style="opacity:0.6; font-size:10px;">(${cnt})</span>
+    </button>`;
+  }).join('');
+
+  renderAdminTasks();
+}
+
+function setEmpFilter(login, el) {
+  activeEmpFilter = login;
+  document.querySelectorAll('.emp-tab').forEach(b => b.classList.remove('active'));
+  el.classList.add('active');
+  renderAdminTasks();
+}
+
+function renderAdminTasks() {
+  const curKey = getCurrentMonthKey();
+  const list = tasks.filter(t => t.userId === activeEmpFilter && getMonthKey(t.createdAt) === curKey);
+  const el = document.getElementById('adminTasksList');
+  if (!list.length) {
+    el.innerHTML = `<div class="empty"><div class="empty-icon">✦</div><div class="empty-title">Нет задач в этом месяце</div></div>`;
+    return;
+  }
+  el.innerHTML = list.map(t => taskCardHTML(t)).join('');
+}
+
+// ADMIN STATS
+function renderAdminStats() {
+  const sfEl = document.getElementById('statsMonthFilter');
+  const months = [...new Set(tasks.map(t => getMonthKey(t.createdAt)))].sort().reverse();
+  const curKey = getCurrentMonthKey();
+
+  const prevVal = sfEl.value;
+  sfEl.innerHTML = '';
+  months.forEach(mk => {
+    const [y, mo] = mk.split('-');
+    const o = document.createElement('option');
+    o.value = mk;
+    o.textContent = MONTHS_RU[parseInt(mo)-1] + ' ' + y;
+    sfEl.appendChild(o);
+  });
+  if (!prevVal && months.includes(curKey)) sfEl.value = curKey;
+  else if (prevVal) sfEl.value = prevVal;
+
+  const selMk = sfEl.value;
+  const filtered = tasks.filter(t => getMonthKey(t.createdAt) === selMk);
+  const employees = Object.entries(USERS).filter(([k,v]) => v.role === 'employee');
+
+  const el = document.getElementById('adminStatsContent');
+
+  const rows = employees.map(([login, u]) => {
+    const empTasks = filtered.filter(t => t.userId === login);
+    const hours = empTasks.reduce((s,t) => s+(parseFloat(t.hours)||0), 0);
+    const done = empTasks.filter(t => t.status==='done').length;
+    const global = empTasks.filter(t => t.global==='global').length;
+    return { name: u.name, total: empTasks.length, hours, done, global };
+  }).filter(r => r.total > 0);
+
+  if (!rows.length) {
+    el.innerHTML = `<div class="card"><div class="empty"><div class="empty-icon">◎</div><div class="empty-title">Нет данных за этот период</div></div></div>`;
+    return;
+  }
+
+  el.innerHTML = `<div class="card">
+    <table style="width:100%; border-collapse:collapse; font-size:13px;">
+      <thead>
+        <tr>
+          <th style="text-align:left; padding:10px 14px; border-bottom:1px solid var(--border); font-size:11px; font-weight:600; letter-spacing:0.06em; text-transform:uppercase; color:var(--text3);">Сотрудник</th>
+          <th style="text-align:center; padding:10px 14px; border-bottom:1px solid var(--border); font-size:11px; font-weight:600; letter-spacing:0.06em; text-transform:uppercase; color:var(--text3);">Задач</th>
+          <th style="text-align:center; padding:10px 14px; border-bottom:1px solid var(--border); font-size:11px; font-weight:600; letter-spacing:0.06em; text-transform:uppercase; color:var(--text3);">Часов</th>
+          <th style="text-align:center; padding:10px 14px; border-bottom:1px solid var(--border); font-size:11px; font-weight:600; letter-spacing:0.06em; text-transform:uppercase; color:var(--text3);">Выполнено</th>
+          <th style="text-align:center; padding:10px 14px; border-bottom:1px solid var(--border); font-size:11px; font-weight:600; letter-spacing:0.06em; text-transform:uppercase; color:var(--text3);">Глобальных</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${rows.map(r => `<tr>
+          <td style="padding:12px 14px; border-bottom:1px solid var(--border); font-weight:600;">${r.name}</td>
+          <td style="padding:12px 14px; border-bottom:1px solid var(--border); text-align:center;">${r.total}</td>
+          <td style="padding:12px 14px; border-bottom:1px solid var(--border); text-align:center; color:var(--gold); font-weight:600;">${r.hours%1===0?r.hours:r.hours.toFixed(1)}</td>
+          <td style="padding:12px 14px; border-bottom:1px solid var(--border); text-align:center; color:#065f46;">${r.done}</td>
+          <td style="padding:12px 14px; border-bottom:1px solid var(--border); text-align:center; color:var(--accent2);">${r.global}</td>
+        </tr>`).join('')}
+      </tbody>
+    </table>
+  </div>`;
+}
+
+// MODAL
+function openTaskModal() {
+  editingTaskId = null;
+  document.getElementById('modalTitle').textContent = 'Новая задача';
+  document.getElementById('tName').value = '';
+  document.getElementById('tType').value = '';
+  document.getElementById('tStatus').value = 'open';
+  document.getElementById('tHours').value = '';
+  document.getElementById('tGlobal').value = 'local';
+  document.getElementById('tDesc').value = '';
+  document.getElementById('saveTaskBtn').textContent = 'Сохранить';
+  document.getElementById('taskModal').style.display = 'flex';
+}
+
+function openEditModal(id) {
+  const t = tasks.find(t => t.id === id);
+  if (!t) return;
+  editingTaskId = id;
+  document.getElementById('modalTitle').textContent = 'Редактировать задачу';
+  document.getElementById('tName').value = t.name || '';
+  document.getElementById('tType').value = t.type || '';
+  document.getElementById('tStatus').value = t.status || 'open';
+  document.getElementById('tHours').value = t.hours || '';
+  document.getElementById('tGlobal').value = t.global || 'local';
+  document.getElementById('tDesc').value = t.desc || '';
+  document.getElementById('saveTaskBtn').textContent = 'Обновить';
+  document.getElementById('taskModal').style.display = 'flex';
+}
+
+function closeModal() {
+  document.getElementById('taskModal').style.display = 'none';
+  editingTaskId = null;
+}
+
+function closeModalOutside(e) {
+  if (e.target === document.getElementById('taskModal')) closeModal();
+}
+
+async function saveTask() {
+  const name = document.getElementById('tName').value.trim();
+  if (!name) { document.getElementById('tName').focus(); return; }
+
+  const btn = document.getElementById('saveTaskBtn');
+  btn.disabled = true;
+  btn.textContent = 'Сохранение...';
+
+  const data = {
+    name,
+    type: document.getElementById('tType').value.trim(),
+    status: document.getElementById('tStatus').value,
+    hours: parseFloat(document.getElementById('tHours').value) || 0,
+    global: document.getElementById('tGlobal').value,
+    desc: document.getElementById('tDesc').value.trim(),
+    userId: currentUser.login,
+  };
+
+  try {
+    if (editingTaskId) {
+      await updateDoc(doc(db, 'oau_tasks', editingTaskId), data);
+      const idx = tasks.findIndex(t => t.id === editingTaskId);
+      if (idx !== -1) tasks[idx] = { ...tasks[idx], ...data };
+    } else {
+      data.createdAt = new Date().toISOString();
+      const ref = await addDoc(collection(db, 'oau_tasks'), data);
+      tasks.unshift({ id: ref.id, ...data });
+    }
+  } catch(e) { console.error(e); }
+
+  closeModal();
+  renderTasks();
+  renderStats();
+  updateTypeSuggestions();
+  btn.disabled = false;
+  btn.textContent = editingTaskId ? 'Обновить' : 'Сохранить';
+}
+
+async function deleteTask(id) {
+  if (!confirm('Удалить задачу?')) return;
+  try {
+    await deleteDoc(doc(db, 'oau_tasks', id));
+    tasks = tasks.filter(t => t.id !== id);
+    renderTasks();
+    renderStats();
+  } catch(e) {}
+}
+
+function updateTypeSuggestions() {
+  const types = [...new Set(tasks.map(t => t.type).filter(Boolean))];
+  const dl = document.getElementById('typesList');
+  dl.innerHTML = types.map(t => `<option value="${t}">`).join('');
+}
+
+function showPage(p, el) {
+  document.querySelectorAll('.page').forEach(pg => pg.classList.remove('active'));
+  document.querySelectorAll('.nav-item, .mobile-nav-item').forEach(b => b.classList.remove('active'));
+  document.getElementById('pg-'+p).classList.add('active');
+  if (el) el.classList.add('active');
+
+  if (p === 'tasks') { renderTasks(); renderStats(); }
+  if (p === 'archive') renderArchive();
+  if (p === 'admin') renderAdmin();
+  if (p === 'adminStats') renderAdminStats();
+}
+
+function exportExcel() {
+  const sfEl = document.getElementById('statsMonthFilter');
+  const selMk = sfEl?.value || getCurrentMonthKey();
+  const filtered = tasks.filter(t => getMonthKey(t.createdAt) === selMk);
+  const [y, mo] = selMk.split('-');
+  const monthName = MONTHS_RU[parseInt(mo)-1] + ' ' + y;
+
+  const data = [['Сотрудник', 'Задача', 'Тип', 'Статус', 'Глобальность', 'Часов', 'Описание', 'Дата']];
+  filtered.forEach(t => data.push([
+    USERS[t.userId]?.name || t.userId,
+    t.name, t.type,
+    STATUS_MAP[t.status]||t.status,
+    GLOBAL_MAP[t.global]||t.global,
+    t.hours||0, t.desc||'',
+    new Date(t.createdAt).toLocaleDateString('ru-RU')
+  ]));
+
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(data), monthName);
+  XLSX.writeFile(wb, `задачи_${selMk}.xlsx`);
+}
+
+// EXPOSE GLOBALS
+window.doLogin = doLogin;
+window.doLogout = doLogout;
+window.quickLogin = quickLogin;
+window.showPage = showPage;
+window.openTaskModal = openTaskModal;
+window.openEditModal = openEditModal;
+window.closeModal = closeModal;
+window.closeModalOutside = closeModalOutside;
+window.saveTask = saveTask;
+window.deleteTask = deleteTask;
+window.filterByStatus = filterByStatus;
+window.toggleArchiveMonth = toggleArchiveMonth;
+window.setEmpFilter = setEmpFilter;
+window.renderAdminStats = renderAdminStats;
+window.exportExcel = exportExcel;
+
+// INIT
+document.getElementById('passInput').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+document.getElementById('loginInput').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
+
+loadSavedAccounts();
+const session = localStorage.getItem('oau_session');
+if (session && USERS[session]) loginAs(session);
+</script>
+</body>
+</html>
