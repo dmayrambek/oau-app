@@ -696,6 +696,9 @@ body {
       <button class="nav-item" onclick="showPage('archive', this)" id="navArchive">
         <span class="ni">◫</span> Архив
       </button>
+      <button class="nav-item" onclick="showPage('bonus', this)" id="navBonus">
+        <span class="ni">◈</span> О!Бонус CRM <span id="bonusBadge" style="display:none; background:#5e6ad2; color:#fff; font-size:10px; font-weight:600; padding:1px 6px; border-radius:99px; margin-left:4px;"></span>
+      </button>
       <div id="adminNav" style="display:none;">
         <div class="sidebar-sep"></div>
         <div class="nav-label">Администратор</div>
@@ -804,11 +807,79 @@ body {
         <div id="adminStatsContent"></div>
       </div>
 
+      <!-- O!BONUS PAGE -->
+      <div id="pg-bonus" class="page fade-in">
+        <div class="page-header">
+          <div>
+            <h2 class="page-title">О!Бонус CRM</h2>
+            <p class="page-sub" id="bonusPageSub">Партнёры не настроенные в системе</p>
+          </div>
+          <div style="display:flex; gap:8px;" id="bonusAdminBtns"></div>
+        </div>
+
+        <!-- FILTERS -->
+        <div class="filters-row">
+          <select class="f-select" id="bonusStatusFilter" onchange="renderBonus()" style="width:auto;">
+            <option value="">Все статусы</option>
+            <option value="open">Открытый</option>
+            <option value="work">В работе</option>
+            <option value="done">Обработано</option>
+            <option value="skip">Не обработано</option>
+          </select>
+          <select class="f-select" id="bonusEmpFilter" onchange="renderBonus()" style="width:auto;">
+            <option value="">Все исполнители</option>
+          </select>
+          <select class="f-select" id="bonusDateFilter" onchange="renderBonus()" style="width:auto;">
+            <option value="">Все даты</option>
+          </select>
+          <input type="text" class="f-input" id="bonusSearch" placeholder="Поиск по названию или SID..." oninput="renderBonus()" style="width:220px;">
+        </div>
+
+        <div id="bonusStats" style="margin-bottom:1rem;"></div>
+        <div id="bonusList"></div>
+      </div>
+
     </main>
   </div>
 </div>
 
-<!-- TASK MODAL -->
+<!-- O!BONUS IMPORT MODAL -->
+<div id="bonusImportModal" class="modal-overlay" style="display:none;" onclick="closeBonusModalOutside(event)">
+  <div class="modal" style="max-width:560px;">
+    <div class="modal-title">Загрузить из письма</div>
+    <p style="font-size:13px; color:var(--text2); margin-bottom:1rem;">Скопируйте текст письма целиком и вставьте сюда. Система автоматически найдёт все пары «Название партнёра» + «SID».</p>
+    <div class="field">
+      <label class="f-label">Текст письма</label>
+      <textarea class="f-textarea" id="bonusImportText" placeholder="Вставьте текст письма..." style="min-height:200px;"></textarea>
+    </div>
+    <div id="bonusPreview" style="display:none; margin-bottom:1rem;">
+      <div style="font-size:12px; font-weight:600; color:var(--text3); text-transform:uppercase; letter-spacing:0.05em; margin-bottom:8px;">Найдено записей: <span id="bonusPreviewCount" style="color:var(--accent2);"></span></div>
+      <div id="bonusPreviewList" style="max-height:200px; overflow-y:auto; background:var(--surface2); border:1px solid var(--border); border-radius:var(--radius-xs); padding:8px;"></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeBonusModal()">Отмена</button>
+      <button class="btn" onclick="parseBonusText()" style="border-color:var(--border2);">🔍 Распарсить</button>
+      <button class="btn btn-primary" id="bonusImportBtn" onclick="importBonus()" style="display:none;">⬆ Импортировать</button>
+    </div>
+  </div>
+</div>
+
+<!-- O!BONUS STATUS MODAL -->
+<div id="bonusStatusModal" class="modal-overlay" style="display:none;" onclick="closeBonusStatusOutside(event)">
+  <div class="modal" style="max-width:400px;">
+    <div class="modal-title" id="bonusStatusTitle">Изменить статус</div>
+    <div style="font-size:13px; color:var(--text2); margin-bottom:1.25rem;" id="bonusStatusPartner"></div>
+    <div style="display:flex; flex-direction:column; gap:8px;">
+      <button class="btn" onclick="setBonusStatus('open')" style="justify-content:flex-start; gap:10px;"><span style="width:10px;height:10px;border-radius:50%;background:#fbbf24;flex-shrink:0;"></span> Открытый</button>
+      <button class="btn" onclick="setBonusStatus('work')" style="justify-content:flex-start; gap:10px;"><span style="width:10px;height:10px;border-radius:50%;background:#60a5fa;flex-shrink:0;"></span> В работе</button>
+      <button class="btn" onclick="setBonusStatus('done')" style="justify-content:flex-start; gap:10px;"><span style="width:10px;height:10px;border-radius:50%;background:#34d399;flex-shrink:0;"></span> Обработано</button>
+      <button class="btn" onclick="setBonusStatus('skip')" style="justify-content:flex-start; gap:10px;"><span style="width:10px;height:10px;border-radius:50%;background:#f87171;flex-shrink:0;"></span> Не обработано</button>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeBonusStatusModal()">Закрыть</button>
+    </div>
+  </div>
+</div>
 <div id="taskModal" class="modal-overlay" style="display:none;" onclick="closeModalOutside(event)">
   <div class="modal">
     <div class="modal-title" id="modalTitle">Новая задача</div>
@@ -995,10 +1066,11 @@ async function startApp() {
     document.getElementById('mobileAdminBtn').style.display = 'flex';
   }
 
-  await Promise.all([loadTasks(), loadLabels()]);
+  await Promise.all([loadTasks(), loadLabels(), loadBonusItems()]);
   renderTasks();
   renderStats();
   updateTypeSuggestions();
+  renderBonusNav();
 }
 
 async function loadTasks() {
@@ -1427,9 +1499,111 @@ function renderAdminStats() {
         </table>
       </div>
     </div>`;
+
+  // O!BONUS STATS BLOCK
+  const bonusMonths = [...new Set(bonusItems.map(b => b.importedAt?.split('T')[0]?.substring(0,7)))].filter(Boolean).sort().reverse();
+  const bonusMonthRows = employees.map(([login, u]) => {
+    const empBonus = bonusItems.filter(b => {
+      const bMk = b.importedAt?.substring(0,7);
+      return (b.assignedTo === login) && bMk === selMk;
+    });
+    const bdone = empBonus.filter(b => b.status === 'done').length;
+    const bwork = empBonus.filter(b => b.status === 'work').length;
+    const bskip = empBonus.filter(b => b.status === 'skip').length;
+    return { name: u.name, total: empBonus.length, done: bdone, work: bwork, skip: bskip };
+  }).filter(r => r.total > 0).sort((a,b) => b.done - a.done);
+
+  const totalBonusDone = bonusItems.filter(b => b.status === 'done' && b.importedAt?.substring(0,7) === selMk).length;
+  const totalBonusOpen = bonusItems.filter(b => b.status === 'open' && b.importedAt?.substring(0,7) === selMk).length;
+  const totalBonusAll = bonusItems.filter(b => b.importedAt?.substring(0,7) === selMk).length;
+
+  const bonusBlock = bonusMonthRows.length > 0 ? `
+    <div style="margin-top:2rem;">
+      <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:1rem;">
+        <div>
+          <div style="font-family:'Syne',sans-serif; font-size:16px; font-weight:700; letter-spacing:-0.02em;">О!Бонус CRM</div>
+          <div style="font-size:12px; color:var(--text3); margin-top:2px;">Обработка партнёров за период</div>
+        </div>
+        <button class="btn btn-primary" onclick="exportBonusExcel('${selMk}')">⬇ Excel О!Бонус</button>
+      </div>
+      <div class="stats-row" style="margin-bottom:1rem;">
+        <div class="stat-card"><div class="stat-num">${totalBonusAll}</div><div class="stat-label">Всего SID</div></div>
+        <div class="stat-card"><div class="stat-num" style="color:#34d399;">${totalBonusDone}</div><div class="stat-label">Обработано</div></div>
+        <div class="stat-card"><div class="stat-num" style="color:#fbbf24;">${totalBonusOpen}</div><div class="stat-label">Открытых</div></div>
+        <div class="stat-card"><div class="stat-num" style="color:#60a5fa;">${totalBonusAll > 0 ? Math.round(totalBonusDone/totalBonusAll*100) : 0}%</div><div class="stat-label">Процент обработки</div></div>
+      </div>
+      <div class="card">
+        <div style="overflow-x:auto;">
+          <table style="width:100%; border-collapse:collapse; font-size:13px;">
+            <thead>
+              <tr style="background:var(--surface2);">
+                <th style="text-align:left; padding:10px 14px; border-bottom:1px solid var(--border); font-size:11px; font-weight:600; letter-spacing:0.06em; text-transform:uppercase; color:var(--text3);">Сотрудник</th>
+                <th style="text-align:center; padding:10px 14px; border-bottom:1px solid var(--border); font-size:11px; font-weight:600; letter-spacing:0.06em; text-transform:uppercase; color:var(--text3);">Взял в работу</th>
+                <th style="text-align:center; padding:10px 14px; border-bottom:1px solid var(--border); font-size:11px; font-weight:600; letter-spacing:0.06em; text-transform:uppercase; color:var(--text3);">Обработал</th>
+                <th style="text-align:center; padding:10px 14px; border-bottom:1px solid var(--border); font-size:11px; font-weight:600; letter-spacing:0.06em; text-transform:uppercase; color:var(--text3);">Не обработал</th>
+                <th style="text-align:center; padding:10px 14px; border-bottom:1px solid var(--border); font-size:11px; font-weight:600; letter-spacing:0.06em; text-transform:uppercase; color:var(--text3);">Итого</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${bonusMonthRows.map((r,i) => {
+                const pct = r.total > 0 ? Math.round(r.done/r.total*100) : 0;
+                return `<tr style="${i%2===0?'':'background:var(--surface2)'}">
+                  <td style="padding:12px 14px; border-bottom:1px solid var(--border); font-weight:600;">${r.name}</td>
+                  <td style="padding:12px 14px; border-bottom:1px solid var(--border); text-align:center; color:#60a5fa; font-weight:500;">${r.work||'—'}</td>
+                  <td style="padding:12px 14px; border-bottom:1px solid var(--border); text-align:center;">
+                    <span style="color:#34d399; font-weight:600;">${r.done||'—'}</span>
+                    ${r.total > 0 ? `<div style="background:var(--surface3);border-radius:99px;height:3px;margin-top:4px;"><div style="background:#34d399;height:3px;border-radius:99px;width:${pct}%;"></div></div>` : ''}
+                  </td>
+                  <td style="padding:12px 14px; border-bottom:1px solid var(--border); text-align:center; color:#f87171;">${r.skip||'—'}</td>
+                  <td style="padding:12px 14px; border-bottom:1px solid var(--border); text-align:center; font-weight:700;">${r.total}</td>
+                </tr>`;
+              }).join('')}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>` : `
+    <div style="margin-top:2rem;">
+      <div style="font-family:'Syne',sans-serif; font-size:16px; font-weight:700; letter-spacing:-0.02em; margin-bottom:0.5rem;">О!Бонус CRM</div>
+      <div class="card"><div class="empty"><div class="empty-icon">◈</div><div class="empty-title">Нет данных О!Бонус за этот период</div></div></div>
+    </div>`;
+
+  document.getElementById('adminStatsContent').innerHTML += bonusBlock;
 }
 
-// MODAL
+function exportBonusExcel(selMk) {
+  const [y, mo] = selMk.split('-');
+  const monthName = MONTHS_RU[parseInt(mo)-1] + ' ' + y;
+  const employees = Object.entries(USERS).filter(([k,v]) => v.role === 'employee');
+
+  const detail = [['Название партнёра', 'SID', 'Статус', 'Исполнитель', 'Дата импорта']];
+  bonusItems.filter(b => b.importedAt?.substring(0,7) === selMk).forEach(b => {
+    detail.push([
+      b.name, b.sid,
+      BONUS_STATUS_MAP[b.status] || b.status,
+      USERS[b.assignedTo]?.name || b.assignedTo || '—',
+      new Date(b.importedAt).toLocaleDateString('ru-RU')
+    ]);
+  });
+
+  const summary = [['Сотрудник', 'Взял в работу', 'Обработал', 'Не обработал', 'Итого']];
+  employees.forEach(([login, u]) => {
+    const empBonus = bonusItems.filter(b => b.assignedTo === login && b.importedAt?.substring(0,7) === selMk);
+    if (!empBonus.length) return;
+    summary.push([
+      u.name,
+      empBonus.filter(b => b.status === 'work').length,
+      empBonus.filter(b => b.status === 'done').length,
+      empBonus.filter(b => b.status === 'skip').length,
+      empBonus.length
+    ]);
+  });
+
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(detail), 'Детали');
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(summary), 'Итоги');
+  XLSX.writeFile(wb, `bonus_${selMk}.xlsx`);
+}
 function openTaskModal() {
   editingTaskId = null;
   document.getElementById('modalTitle').textContent = 'Новая задача';
@@ -1531,6 +1705,7 @@ function showPage(p, el) {
   if (p === 'archive') renderArchive();
   if (p === 'admin') renderAdmin();
   if (p === 'adminStats') renderAdminStats();
+  if (p === 'bonus') renderBonus();
 }
 
 function exportExcel() {
@@ -1555,6 +1730,274 @@ function exportExcel() {
   XLSX.writeFile(wb, `задачи_${selMk}.xlsx`);
 }
 
+// O!BONUS CRM
+let bonusItems = [];
+let bonusParsed = [];
+let bonusEditingId = null;
+
+const BONUS_STATUS_MAP = { open: 'Открытый', work: 'В работе', done: 'Обработано', skip: 'Не обработано' };
+const BONUS_BADGE_CLASS = { open: 'badge-open', work: 'badge-work', done: 'badge-done', skip: 'badge-pause' };
+
+async function loadBonusItems() {
+  try {
+    const q = query(collection(db, 'oau_bonus'), orderBy('importedAt', 'desc'));
+    const snap = await getDocs(q);
+    bonusItems = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  } catch(e) { bonusItems = []; }
+}
+
+function renderBonusNav() {
+  const today = new Date().toDateString();
+  const newToday = bonusItems.filter(b => new Date(b.importedAt).toDateString() === today && b._new).length;
+  const badge = document.getElementById('bonusBadge');
+  if (newToday > 0) {
+    badge.style.display = 'inline';
+    badge.textContent = newToday;
+  } else {
+    badge.style.display = 'none';
+  }
+}
+
+function renderBonus() {
+  const adminBtns = document.getElementById('bonusAdminBtns');
+  if (currentUser.role === 'admin') {
+    adminBtns.innerHTML = `<button class="btn btn-primary" onclick="openBonusImport()">⬆ Загрузить письмо</button>`;
+  } else {
+    adminBtns.innerHTML = '';
+  }
+
+  // Build date filter
+  const dates = [...new Set(bonusItems.map(b => b.importedAt?.split('T')[0]))].filter(Boolean).sort().reverse();
+  const dfEl = document.getElementById('bonusDateFilter');
+  const prevDate = dfEl.value;
+  dfEl.innerHTML = '<option value="">Все даты</option>';
+  dates.forEach(d => {
+    const o = document.createElement('option');
+    o.value = d;
+    o.textContent = new Date(d+'T00:00:00').toLocaleDateString('ru-RU', {day:'numeric',month:'long',year:'numeric'});
+    dfEl.appendChild(o);
+  });
+  if (prevDate) dfEl.value = prevDate;
+  else if (dates.length) dfEl.value = dates[0];
+
+  // Build emp filter
+  const efEl = document.getElementById('bonusEmpFilter');
+  const prevEmp = efEl.value;
+  efEl.innerHTML = '<option value="">Все исполнители</option>';
+  const assignees = [...new Set(bonusItems.map(b => b.assignedTo).filter(Boolean))];
+  assignees.forEach(login => {
+    const o = document.createElement('option');
+    o.value = login; o.textContent = USERS[login]?.name || login;
+    efEl.appendChild(o);
+  });
+  if (prevEmp) efEl.value = prevEmp;
+
+  const statusF = document.getElementById('bonusStatusFilter').value;
+  const empF = efEl.value;
+  const dateF = dfEl.value;
+  const search = document.getElementById('bonusSearch').value.toLowerCase().trim();
+
+  let list = bonusItems.filter(b => {
+    if (statusF && b.status !== statusF) return false;
+    if (empF && b.assignedTo !== empF) return false;
+    if (dateF && b.importedAt?.split('T')[0] !== dateF) return false;
+    if (search && !b.name.toLowerCase().includes(search) && !String(b.sid).includes(search)) return false;
+    return true;
+  });
+
+  // Stats
+  const open = bonusItems.filter(b => b.status === 'open').length;
+  const work = bonusItems.filter(b => b.status === 'work').length;
+  const done = bonusItems.filter(b => b.status === 'done').length;
+  const skip = bonusItems.filter(b => b.status === 'skip').length;
+
+  document.getElementById('bonusStats').innerHTML = `
+    <div style="display:flex; gap:8px; flex-wrap:wrap; margin-bottom:1rem;">
+      <div style="background:var(--surface); border:1px solid var(--border); border-radius:var(--radius-xs); padding:6px 14px; font-size:12px;">
+        <span style="color:var(--text3);">Всего: </span><span style="font-weight:600;">${bonusItems.length}</span>
+      </div>
+      <div style="background:rgba(251,191,36,0.08); border:1px solid rgba(251,191,36,0.2); border-radius:var(--radius-xs); padding:6px 14px; font-size:12px; color:#fbbf24; font-weight:500;">
+        Открытых: ${open}
+      </div>
+      <div style="background:rgba(96,165,250,0.08); border:1px solid rgba(96,165,250,0.2); border-radius:var(--radius-xs); padding:6px 14px; font-size:12px; color:#60a5fa; font-weight:500;">
+        В работе: ${work}
+      </div>
+      <div style="background:rgba(52,211,153,0.08); border:1px solid rgba(52,211,153,0.2); border-radius:var(--radius-xs); padding:6px 14px; font-size:12px; color:#34d399; font-weight:500;">
+        Обработано: ${done}
+      </div>
+      <div style="background:rgba(248,113,113,0.08); border:1px solid rgba(248,113,113,0.2); border-radius:var(--radius-xs); padding:6px 14px; font-size:12px; color:#f87171; font-weight:500;">
+        Не обработано: ${skip}
+      </div>
+    </div>`;
+
+  const el = document.getElementById('bonusList');
+  if (!list.length) {
+    el.innerHTML = `<div class="empty"><div class="empty-icon">◈</div><div class="empty-title">Записей не найдено</div><div class="empty-sub">Загрузите письмо или измените фильтры</div></div>`;
+    return;
+  }
+
+  el.innerHTML = `<div style="background:var(--surface); border:1px solid var(--border); border-radius:var(--radius); overflow:hidden;">
+    <table style="width:100%; border-collapse:collapse; font-size:13px;">
+      <thead>
+        <tr style="background:var(--surface2);">
+          <th style="text-align:left; padding:10px 14px; border-bottom:1px solid var(--border); font-size:11px; font-weight:600; letter-spacing:0.05em; text-transform:uppercase; color:var(--text3);">Название партнёра</th>
+          <th style="text-align:left; padding:10px 14px; border-bottom:1px solid var(--border); font-size:11px; font-weight:600; letter-spacing:0.05em; text-transform:uppercase; color:var(--text3);">SID</th>
+          <th style="text-align:left; padding:10px 14px; border-bottom:1px solid var(--border); font-size:11px; font-weight:600; letter-spacing:0.05em; text-transform:uppercase; color:var(--text3);">Статус</th>
+          <th style="text-align:left; padding:10px 14px; border-bottom:1px solid var(--border); font-size:11px; font-weight:600; letter-spacing:0.05em; text-transform:uppercase; color:var(--text3);">Исполнитель</th>
+          <th style="text-align:left; padding:10px 14px; border-bottom:1px solid var(--border); font-size:11px; font-weight:600; letter-spacing:0.05em; text-transform:uppercase; color:var(--text3);">Дата</th>
+        </tr>
+      </thead>
+      <tbody>
+        ${list.map((b,i) => {
+          const assignee = b.assignedTo ? (USERS[b.assignedTo]?.name?.split(' ').slice(0,2).join(' ') || b.assignedTo) : '—';
+          const date = b.importedAt ? new Date(b.importedAt).toLocaleDateString('ru-RU') : '—';
+          return `<tr style="${i%2===0?'':'background:var(--surface2)'}" class="bonus-row" onclick="openBonusStatus('${b.id}')">
+            <td style="padding:10px 14px; border-bottom:1px solid var(--border); font-weight:500; cursor:pointer;">${b.name}</td>
+            <td style="padding:10px 14px; border-bottom:1px solid var(--border); font-family:monospace; color:var(--text2); cursor:pointer;">${b.sid}</td>
+            <td style="padding:10px 14px; border-bottom:1px solid var(--border); cursor:pointer;">
+              <span class="badge ${BONUS_BADGE_CLASS[b.status]||'badge-open'}">${BONUS_STATUS_MAP[b.status]||b.status}</span>
+            </td>
+            <td style="padding:10px 14px; border-bottom:1px solid var(--border); color:var(--text2); cursor:pointer;">${assignee}</td>
+            <td style="padding:10px 14px; border-bottom:1px solid var(--border); color:var(--text3); cursor:pointer;">${date}</td>
+          </tr>`;
+        }).join('')}
+      </tbody>
+    </table>
+  </div>`;
+}
+
+// IMPORT
+function openBonusImport() {
+  document.getElementById('bonusImportText').value = '';
+  document.getElementById('bonusPreview').style.display = 'none';
+  document.getElementById('bonusImportBtn').style.display = 'none';
+  bonusParsed = [];
+  document.getElementById('bonusImportModal').style.display = 'flex';
+}
+
+function closeBonusModal() {
+  document.getElementById('bonusImportModal').style.display = 'none';
+}
+
+function closeBonusModalOutside(e) {
+  if (e.target === document.getElementById('bonusImportModal')) closeBonusModal();
+}
+
+function parseBonusText() {
+  const text = document.getElementById('bonusImportText').value;
+  const results = [];
+  const lines = text.split('\n');
+
+  let currentName = null;
+  for (const line of lines) {
+    const nameMatch = line.match(/Название партнёра:\s*(.+)/i);
+    const sidMatch = line.match(/SID:\s*(\d+)/i);
+    if (nameMatch) currentName = nameMatch[1].trim();
+    if (sidMatch && currentName) {
+      results.push({ name: currentName, sid: sidMatch[1].trim() });
+      currentName = null;
+    }
+  }
+
+  bonusParsed = results;
+  const preview = document.getElementById('bonusPreview');
+  const countEl = document.getElementById('bonusPreviewCount');
+  const listEl = document.getElementById('bonusPreviewList');
+
+  if (!results.length) {
+    preview.style.display = 'block';
+    countEl.textContent = '0';
+    listEl.innerHTML = '<div style="color:var(--text3); font-size:12px; padding:4px;">Ничего не найдено. Проверьте формат текста.</div>';
+    document.getElementById('bonusImportBtn').style.display = 'none';
+    return;
+  }
+
+  preview.style.display = 'block';
+  countEl.textContent = results.length;
+  listEl.innerHTML = results.map(r => `
+    <div style="padding:5px 0; border-bottom:1px solid var(--border); font-size:12px; display:flex; gap:12px;">
+      <span style="color:var(--text2); flex:1;">${r.name}</span>
+      <span style="font-family:monospace; color:var(--accent2);">${r.sid}</span>
+    </div>`).join('');
+  document.getElementById('bonusImportBtn').style.display = 'inline-flex';
+}
+
+async function importBonus() {
+  if (!bonusParsed.length) return;
+  const btn = document.getElementById('bonusImportBtn');
+  btn.disabled = true;
+  btn.textContent = 'Импорт...';
+
+  const now = new Date().toISOString();
+  try {
+    for (const item of bonusParsed) {
+      const data = {
+        name: item.name,
+        sid: item.sid,
+        status: 'open',
+        assignedTo: null,
+        importedAt: now,
+        updatedAt: now,
+        updatedBy: null,
+        _new: true
+      };
+      const ref = await addDoc(collection(db, 'oau_bonus'), data);
+      bonusItems.unshift({ id: ref.id, ...data });
+    }
+  } catch(e) { console.error(e); }
+
+  closeBonusModal();
+  renderBonus();
+  renderBonusNav();
+  btn.disabled = false;
+  btn.textContent = '⬆ Импортировать';
+}
+
+// STATUS CHANGE
+function openBonusStatus(id) {
+  bonusEditingId = id;
+  const b = bonusItems.find(x => x.id === id);
+  if (!b) return;
+  document.getElementById('bonusStatusTitle').textContent = 'Изменить статус';
+  document.getElementById('bonusStatusPartner').innerHTML = `<strong>${b.name}</strong><br><span style="font-family:monospace; color:var(--accent2);">SID: ${b.sid}</span>`;
+  document.getElementById('bonusStatusModal').style.display = 'flex';
+}
+
+function closeBonusStatusModal() {
+  document.getElementById('bonusStatusModal').style.display = 'none';
+  bonusEditingId = null;
+}
+
+function closeBonusStatusOutside(e) {
+  if (e.target === document.getElementById('bonusStatusModal')) closeBonusStatusModal();
+}
+
+async function setBonusStatus(status) {
+  if (!bonusEditingId) return;
+  const now = new Date().toISOString();
+  const assignedTo = (status === 'work' || status === 'done') ? currentUser.login : null;
+
+  try {
+    await updateDoc(doc(db, 'oau_bonus', bonusEditingId), {
+      status,
+      assignedTo: assignedTo || (bonusItems.find(b => b.id === bonusEditingId)?.assignedTo || null),
+      updatedAt: now,
+      updatedBy: currentUser.login,
+      _new: false
+    });
+    const idx = bonusItems.findIndex(b => b.id === bonusEditingId);
+    if (idx !== -1) {
+      bonusItems[idx].status = status;
+      if (assignedTo) bonusItems[idx].assignedTo = assignedTo;
+      bonusItems[idx].updatedAt = now;
+      bonusItems[idx]._new = false;
+    }
+  } catch(e) { console.error(e); }
+
+  closeBonusStatusModal();
+  renderBonus();
+}
+
 // EXPOSE GLOBALS
 window.showPage = showPage;
 window.doLogin = doLogin;
@@ -1573,6 +2016,16 @@ window.renderAdminStats = renderAdminStats;
 window.exportExcel = exportExcel;
 window.exportAdminExcel = exportAdminExcel;
 window.setLabel = setLabel;
+window.renderBonus = renderBonus;
+window.openBonusImport = openBonusImport;
+window.closeBonusModal = closeBonusModal;
+window.closeBonusModalOutside = closeBonusModalOutside;
+window.parseBonusText = parseBonusText;
+window.importBonus = importBonus;
+window.openBonusStatus = openBonusStatus;
+window.closeBonusStatusModal = closeBonusStatusModal;
+window.closeBonusStatusOutside = closeBonusStatusOutside;
+window.exportBonusExcel = exportBonusExcel;
 
 // INIT
 document.getElementById('passInput').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
