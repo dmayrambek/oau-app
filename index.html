@@ -669,7 +669,68 @@ body {
 
 .main { position: relative; z-index: 1; }
 
-.fade-in { animation: fadeIn 0.2s ease; }
+.kb-tool {
+  padding: 4px 8px;
+  border-radius: 4px;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text2);
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.12s;
+  min-width: 28px;
+  text-align: center;
+}
+.kb-tool:hover { background: var(--surface3); color: var(--text); border-color: var(--border2); }
+
+.kb-article-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 1rem 1.25rem;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+  transition: all 0.12s;
+}
+.kb-article-card:hover { border-color: var(--border2); background: var(--surface2); }
+
+.kb-article-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+  cursor: pointer;
+  transition: color 0.12s;
+}
+.kb-article-title:hover { color: var(--accent2); }
+
+.kb-article-meta { font-size: 11px; color: var(--text3); margin-top: 3px; }
+
+.kb-file-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 4px 10px;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 12px;
+  color: var(--text2);
+  cursor: pointer;
+  transition: all 0.12s;
+  text-decoration: none;
+}
+.kb-file-tag:hover { border-color: var(--accent2); color: var(--text); }
+
+.kb-view-content { font-size: 14px; line-height: 1.8; color: var(--text); }
+.kb-view-content b, .kb-view-content strong { font-weight: 700; }
+.kb-view-content i, .kb-view-content em { font-style: italic; }
+.kb-view-content u { text-decoration: underline; }
+.kb-view-content ul { padding-left: 1.5rem; margin: 0.5rem 0; }
+.kb-view-content ol { padding-left: 1.5rem; margin: 0.5rem 0; }
+.kb-view-content li { margin-bottom: 4px; }
 
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(6px); }
@@ -750,7 +811,9 @@ body {
       <button class="nav-item" onclick="showPage('bonus', this)" id="navBonus">
         <span class="ni">◈</span> О!Бонус CRM <span id="bonusBadge" style="display:none; background:#5e6ad2; color:#fff; font-size:10px; font-weight:600; padding:1px 6px; border-radius:99px; margin-left:4px;"></span>
       </button>
-      <div id="adminNav" style="display:none;">
+      <button class="nav-item" onclick="showPage('kb', this)" id="navKB">
+        <span class="ni">📖</span> База Знаний
+      </button>
         <div class="sidebar-sep"></div>
         <div class="nav-label">Администратор</div>
         <button class="nav-item" onclick="showPage('admin', this)">
@@ -896,11 +959,100 @@ body {
         <div id="bonusList"></div>
       </div>
 
+      <!-- KNOWLEDGE BASE PAGE -->
+      <div id="pg-kb" class="page fade-in">
+        <div class="page-header">
+          <div>
+            <h2 class="page-title">База Знаний OAU</h2>
+            <p class="page-sub">Инструкции, регламенты, FAQ</p>
+          </div>
+          <div id="kbAdminBtns"></div>
+        </div>
+        <div class="filters-row">
+          <input type="text" class="f-input" id="kbSearch" placeholder="Поиск по названию..." oninput="renderKB()" style="width:240px;">
+        </div>
+        <div id="kbList"></div>
+      </div>
+
+      <!-- KNOWLEDGE BASE ARTICLE VIEW -->
+      <div id="pg-kb-view" class="page fade-in">
+        <div class="page-header">
+          <div style="display:flex; align-items:center; gap:12px;">
+            <button class="btn btn-ghost btn-sm" onclick="showPage('kb', null)" style="padding:6px 10px;">← Назад</button>
+            <div>
+              <h2 class="page-title" id="kbViewTitle"></h2>
+              <p class="page-sub" id="kbViewMeta"></p>
+            </div>
+          </div>
+          <div id="kbViewAdminBtns"></div>
+        </div>
+        <div class="card" style="margin-bottom:1rem;">
+          <div id="kbViewContent" style="font-size:14px; line-height:1.8; color:var(--text);"></div>
+        </div>
+        <div id="kbViewFiles"></div>
+      </div>
+
     </main>
   </div>
 </div>
 
-<!-- O!BONUS IMPORT MODAL -->
+<!-- KB ARTICLE MODAL -->
+<div id="kbModal" class="modal-overlay" style="display:none;" onclick="closeKBModalOutside(event)">
+  <div class="modal" style="max-width:680px; width:95%;">
+    <div class="modal-title" id="kbModalTitle">Новая статья</div>
+    <div class="field">
+      <label class="f-label">Название</label>
+      <input type="text" class="f-input" id="kbTitle" placeholder="Название статьи...">
+    </div>
+    <div class="field">
+      <label class="f-label">Содержание</label>
+      <div style="border:1px solid var(--border2); border-radius:var(--radius-sm); overflow:hidden;">
+        <!-- TOOLBAR -->
+        <div style="display:flex; flex-wrap:wrap; gap:3px; padding:8px; background:var(--surface2); border-bottom:1px solid var(--border);">
+          <button class="kb-tool" onclick="kbFormat('bold')" title="Жирный"><b>B</b></button>
+          <button class="kb-tool" onclick="kbFormat('italic')" title="Курсив"><i>I</i></button>
+          <button class="kb-tool" onclick="kbFormat('underline')" title="Подчёркнутый"><u>U</u></button>
+          <div style="width:1px;background:var(--border);margin:0 4px;"></div>
+          <button class="kb-tool" onclick="kbFormat('justifyLeft')" title="По левому краю">⬅</button>
+          <button class="kb-tool" onclick="kbFormat('justifyCenter')" title="По центру">⬌</button>
+          <button class="kb-tool" onclick="kbFormat('justifyRight')" title="По правому краю">➡</button>
+          <div style="width:1px;background:var(--border);margin:0 4px;"></div>
+          <button class="kb-tool" onclick="kbFormat('insertUnorderedList')" title="Список">☰</button>
+          <button class="kb-tool" onclick="kbFormat('insertOrderedList')" title="Нумерованный">1.</button>
+          <div style="width:1px;background:var(--border);margin:0 4px;"></div>
+          <select class="kb-tool" style="padding:4px 6px; font-size:12px;" onchange="kbFontSize(this.value)">
+            <option value="2">Мелкий</option>
+            <option value="3" selected>Обычный</option>
+            <option value="4">Средний</option>
+            <option value="5">Крупный</option>
+            <option value="6">Очень крупный</option>
+          </select>
+          <div style="width:1px;background:var(--border);margin:0 4px;"></div>
+          <label class="kb-tool" style="cursor:pointer; position:relative;" title="Цвет текста">
+            A <input type="color" id="kbColorPicker" style="position:absolute;opacity:0;width:0;height:0;" oninput="kbTextColor(this.value)">
+          </label>
+          <label class="kb-tool" style="cursor:pointer; position:relative;" title="Выделение">
+            <span style="background:#fbbf24;padding:0 3px;">H</span>
+            <input type="color" id="kbBgColorPicker" value="#fbbf24" style="position:absolute;opacity:0;width:0;height:0;" oninput="kbBgColor(this.value)">
+          </label>
+        </div>
+        <div id="kbEditor" contenteditable="true" style="min-height:200px; padding:14px; outline:none; font-size:14px; line-height:1.7; color:var(--text); background:var(--surface); max-height:350px; overflow-y:auto;" placeholder="Начните вводить текст..."></div>
+      </div>
+    </div>
+    <div class="field">
+      <label class="f-label">Вложения (любые форматы)</label>
+      <label style="display:flex; align-items:center; gap:8px; padding:10px 14px; background:var(--surface2); border:1px solid var(--border); border-radius:var(--radius-xs); cursor:pointer; font-size:13px; color:var(--text2); transition:all 0.15s;" onmouseover="this.style.borderColor='var(--accent2)'" onmouseout="this.style.borderColor='var(--border)'">
+        <span>📎</span> Прикрепить файлы
+        <input type="file" id="kbFiles" multiple style="display:none;" onchange="kbPreviewFiles(this)">
+      </label>
+      <div id="kbFilesPreview" style="margin-top:8px; display:flex; flex-wrap:wrap; gap:6px;"></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-ghost" onclick="closeKBModal()">Отмена</button>
+      <button class="btn btn-primary" id="kbSaveBtn" onclick="saveKBArticle()">Сохранить</button>
+    </div>
+  </div>
+</div>
 <div id="bonusImportModal" class="modal-overlay" style="display:none;" onclick="closeBonusModalOutside(event)">
   <div class="modal" style="max-width:560px;">
     <div class="modal-title">Загрузить из письма</div>
@@ -1144,7 +1296,7 @@ async function startApp() {
     document.getElementById('navTasks').innerHTML = '<span class="ni">✦</span> Все задачи';
   }
 
-  await Promise.all([loadTasks(), loadLabels(), loadBonusItems()]);
+  await Promise.all([loadTasks(), loadLabels(), loadBonusItems(), loadKBArticles()]);
   renderTasks();
   renderStats();
   updateTypeSuggestions();
@@ -1796,6 +1948,8 @@ function showPage(p, el) {
   if (p === 'admin') renderAdmin();
   if (p === 'adminStats') renderAdminStats();
   if (p === 'bonus') renderBonus();
+  if (p === 'kb') renderKB();
+  if (p === 'kb-view') {} // rendered before showPage call
 }
 
 function exportExcel() {
@@ -2250,6 +2404,225 @@ function updateStars(theme) {
   }
 }
 
+// KNOWLEDGE BASE
+let kbArticles = [];
+let kbEditingId = null;
+let kbPendingFiles = [];
+
+async function loadKBArticles() {
+  try {
+    const q = query(collection(db, 'oau_kb'), orderBy('createdAt', 'desc'));
+    const snap = await getDocs(q);
+    kbArticles = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  } catch(e) { kbArticles = []; }
+}
+
+function renderKB() {
+  const adminBtns = document.getElementById('kbAdminBtns');
+  if (currentUser.role === 'admin') {
+    adminBtns.innerHTML = `<button class="btn btn-primary" onclick="openKBModal()">+ Добавить статью</button>`;
+  } else {
+    adminBtns.innerHTML = '';
+  }
+
+  const search = document.getElementById('kbSearch')?.value.toLowerCase().trim() || '';
+  const list = kbArticles.filter(a => !search || a.title?.toLowerCase().includes(search));
+  const el = document.getElementById('kbList');
+
+  if (!list.length) {
+    el.innerHTML = `<div class="empty"><div class="empty-icon">📖</div><div class="empty-title">${search ? 'Ничего не найдено' : 'База знаний пуста'}</div><div class="empty-sub">${currentUser.role === 'admin' ? 'Нажмите «+ Добавить статью»' : 'Скоро здесь появятся материалы'}</div></div>`;
+    return;
+  }
+
+  el.innerHTML = list.map(a => {
+    const date = a.createdAt ? new Date(a.createdAt).toLocaleDateString('ru-RU') : '';
+    const filesCount = a.files?.length || 0;
+    const adminActions = currentUser.role === 'admin' ? `
+      <div style="display:flex;gap:6px;flex-shrink:0;">
+        <button class="btn btn-sm btn-ghost" onclick="openKBEdit('${a.id}')">✎</button>
+        <button class="btn btn-sm btn-danger" onclick="deleteKBArticle('${a.id}')">✕</button>
+      </div>` : '';
+    return `<div class="kb-article-card">
+      <div style="flex:1;min-width:0;">
+        <div class="kb-article-title" onclick="openKBView('${a.id}')">${a.title}</div>
+        <div class="kb-article-meta">${date}${filesCount ? ` · 📎 ${filesCount} файл${filesCount>1?'а':''}` : ''}</div>
+      </div>
+      ${adminActions}
+    </div>`;
+  }).join('');
+}
+
+function openKBView(id) {
+  const a = kbArticles.find(x => x.id === id);
+  if (!a) return;
+  document.getElementById('kbViewTitle').textContent = a.title;
+  const date = a.createdAt ? new Date(a.createdAt).toLocaleDateString('ru-RU') : '';
+  document.getElementById('kbViewMeta').textContent = `Добавлено: ${date}`;
+  document.getElementById('kbViewContent').innerHTML = a.content || '';
+  document.getElementById('kbViewContent').className = 'kb-view-content';
+
+  const adminBtns = document.getElementById('kbViewAdminBtns');
+  if (currentUser.role === 'admin') {
+    adminBtns.innerHTML = `
+      <div style="display:flex;gap:8px;">
+        <button class="btn" onclick="openKBEdit('${a.id}')">✎ Редактировать</button>
+        <button class="btn btn-danger" onclick="deleteKBArticle('${a.id}')">✕ Удалить</button>
+      </div>`;
+  } else {
+    adminBtns.innerHTML = '';
+  }
+
+  const filesEl = document.getElementById('kbViewFiles');
+  if (a.files?.length) {
+    filesEl.innerHTML = `<div style="font-size:12px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:8px;">Вложения</div>
+      <div style="display:flex;flex-wrap:wrap;gap:8px;">
+        ${a.files.map(f => `<a class="kb-file-tag" href="${f.data}" download="${f.name}">📎 ${f.name}</a>`).join('')}
+      </div>`;
+  } else {
+    filesEl.innerHTML = '';
+  }
+
+  showPage('kb-view', null);
+}
+
+function openKBModal(id) {
+  kbEditingId = null;
+  kbPendingFiles = [];
+  document.getElementById('kbModalTitle').textContent = 'Новая статья';
+  document.getElementById('kbTitle').value = '';
+  document.getElementById('kbEditor').innerHTML = '';
+  document.getElementById('kbFilesPreview').innerHTML = '';
+  document.getElementById('kbFiles').value = '';
+  document.getElementById('kbSaveBtn').textContent = 'Сохранить';
+  document.getElementById('kbModal').style.display = 'flex';
+}
+
+function openKBEdit(id) {
+  const a = kbArticles.find(x => x.id === id);
+  if (!a) return;
+  kbEditingId = id;
+  kbPendingFiles = a.files ? [...a.files] : [];
+  document.getElementById('kbModalTitle').textContent = 'Редактировать статью';
+  document.getElementById('kbTitle').value = a.title || '';
+  document.getElementById('kbEditor').innerHTML = a.content || '';
+  document.getElementById('kbSaveBtn').textContent = 'Обновить';
+  renderKBFilesPreview();
+  document.getElementById('kbModal').style.display = 'flex';
+}
+
+function closeKBModal() {
+  document.getElementById('kbModal').style.display = 'none';
+  kbEditingId = null;
+  kbPendingFiles = [];
+}
+
+function closeKBModalOutside(e) {
+  if (e.target === document.getElementById('kbModal')) closeKBModal();
+}
+
+function kbFormat(cmd) {
+  document.getElementById('kbEditor').focus();
+  document.execCommand(cmd, false, null);
+}
+
+function kbFontSize(size) {
+  document.getElementById('kbEditor').focus();
+  document.execCommand('fontSize', false, size);
+}
+
+function kbTextColor(color) {
+  document.getElementById('kbEditor').focus();
+  document.execCommand('foreColor', false, color);
+}
+
+function kbBgColor(color) {
+  document.getElementById('kbEditor').focus();
+  document.execCommand('hiliteColor', false, color);
+}
+
+function kbPreviewFiles(input) {
+  const files = Array.from(input.files);
+  files.forEach(file => {
+    if (file.size > 5 * 1024 * 1024) {
+      alert(`Файл "${file.name}" слишком большой (макс. 5MB)`);
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = e => {
+      kbPendingFiles.push({ name: file.name, data: e.target.result, type: file.type });
+      renderKBFilesPreview();
+    };
+    reader.readAsDataURL(file);
+  });
+  input.value = '';
+}
+
+function renderKBFilesPreview() {
+  const el = document.getElementById('kbFilesPreview');
+  if (!kbPendingFiles.length) { el.innerHTML = ''; return; }
+  el.innerHTML = kbPendingFiles.map((f, i) => `
+    <div style="display:inline-flex;align-items:center;gap:6px;padding:4px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:6px;font-size:12px;color:var(--text2);">
+      📎 ${f.name}
+      <button onclick="removeKBFile(${i})" style="background:none;border:none;color:var(--text3);cursor:pointer;font-size:12px;padding:0 2px;">✕</button>
+    </div>`).join('');
+}
+
+function removeKBFile(i) {
+  kbPendingFiles.splice(i, 1);
+  renderKBFilesPreview();
+}
+
+async function saveKBArticle() {
+  const title = document.getElementById('kbTitle').value.trim();
+  if (!title) { document.getElementById('kbTitle').focus(); return; }
+  const content = document.getElementById('kbEditor').innerHTML;
+  const btn = document.getElementById('kbSaveBtn');
+  btn.disabled = true;
+  btn.textContent = 'Сохранение...';
+
+  const data = {
+    title,
+    content,
+    files: kbPendingFiles,
+    updatedAt: new Date().toISOString(),
+    updatedBy: currentUser.login
+  };
+
+  try {
+    if (kbEditingId) {
+      await updateDoc(doc(db, 'oau_kb', kbEditingId), data);
+      const idx = kbArticles.findIndex(a => a.id === kbEditingId);
+      if (idx !== -1) kbArticles[idx] = { ...kbArticles[idx], ...data };
+    } else {
+      data.createdAt = new Date().toISOString();
+      data.createdBy = currentUser.login;
+      const ref = await addDoc(collection(db, 'oau_kb'), data);
+      kbArticles.unshift({ id: ref.id, ...data });
+    }
+  } catch(e) { console.error(e); }
+
+  closeKBModal();
+  renderKB();
+  btn.disabled = false;
+  btn.textContent = kbEditingId ? 'Обновить' : 'Сохранить';
+}
+
+async function deleteKBArticle(id) {
+  if (!confirm('Удалить статью?')) return;
+  kbArticles = kbArticles.filter(a => a.id !== id);
+  renderKB();
+  try {
+    await deleteDoc(doc(db, 'oau_kb', id));
+  } catch(e) {
+    console.error(e);
+    await loadKBArticles();
+    renderKB();
+  }
+  if (document.getElementById('pg-kb-view').classList.contains('active')) {
+    showPage('kb', null);
+  }
+}
+
 // EXPOSE GLOBALS
 window.showPage = showPage;
 window.doLogin = doLogin;
@@ -2281,6 +2654,20 @@ window.closeBonusStatusModal = closeBonusStatusModal;
 window.closeBonusStatusOutside = closeBonusStatusOutside;
 window.setBonusStatus = setBonusStatus;
 window.toggleTheme = toggleTheme;
+window.renderKB = renderKB;
+window.openKBModal = openKBModal;
+window.openKBEdit = openKBEdit;
+window.openKBView = openKBView;
+window.closeKBModal = closeKBModal;
+window.closeKBModalOutside = closeKBModalOutside;
+window.saveKBArticle = saveKBArticle;
+window.deleteKBArticle = deleteKBArticle;
+window.kbFormat = kbFormat;
+window.kbFontSize = kbFontSize;
+window.kbTextColor = kbTextColor;
+window.kbBgColor = kbBgColor;
+window.kbPreviewFiles = kbPreviewFiles;
+window.removeKBFile = removeKBFile;
 window.exportBonusExcel = exportBonusExcel;
 window.deleteBonusItem = deleteBonusItem;
 window.deleteAllBonus = deleteAllBonus;
