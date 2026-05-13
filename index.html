@@ -705,8 +705,51 @@ body {
   color: var(--text3);
 }
 
-/* ADMIN PANEL */
-.emp-tabs {
+/* LABELS */
+.labels-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 10px;
+  margin-bottom: 0;
+}
+
+.label-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  padding: 12px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  box-shadow: var(--shadow);
+}
+
+.label-emp-name {
+  font-size: 13px; font-weight: 600;
+  color: var(--text);
+}
+
+.label-select {
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 99px;
+  color: var(--text);
+  font-family: 'Inter', sans-serif;
+  font-size: 12px; font-weight: 600;
+  padding: 4px 10px;
+  outline: none;
+  cursor: pointer;
+  transition: all 0.15s;
+  appearance: none;
+  text-align: center;
+}
+
+.label-select:focus { border-color: var(--accent2); }
+.label-select.lbl-top { background: #fef9c3; border-color: #fde047; color: #713f12; }
+.label-select.lbl-grow { background: #dcfce7; border-color: #86efac; color: #14532d; }
+.label-select.lbl-better { background: #dbeafe; border-color: #93c5fd; color: #1e3a8a; }
+.label-select.lbl-behind { background: #fee2e2; border-color: #fca5a5; color: #7f1d1d; }
   display: flex;
   gap: 6px;
   margin-bottom: 1.5rem;
@@ -994,10 +1037,30 @@ body {
         <div class="page-header">
           <div>
             <h2 class="page-title">Все сотрудники</h2>
-            <p class="page-sub">Задачи команды за текущий месяц</p>
+            <p class="page-sub" id="adminPageSub">Задачи команды</p>
           </div>
+          <button class="btn btn-primary" onclick="exportAdminExcel()">⬇ Excel</button>
         </div>
-        <div class="emp-tabs" id="empTabs"></div>
+
+        <!-- LABELS ROW -->
+        <div id="labelsRow" style="margin-bottom:1.5rem;"></div>
+
+        <!-- FILTERS -->
+        <div class="filters-row" style="margin-bottom:1.25rem;">
+          <select class="f-select" id="adminEmpFilter" onchange="renderAdmin()" style="width:auto;">
+            <option value="">Все сотрудники</option>
+          </select>
+          <select class="f-select" id="adminMonthFilter" onchange="renderAdmin()" style="width:auto;">
+          </select>
+          <select class="f-select" id="adminStatusFilter" onchange="renderAdmin()" style="width:auto;">
+            <option value="">Все статусы</option>
+            <option value="open">Открытый</option>
+            <option value="work">В работе</option>
+            <option value="pause">На паузе</option>
+            <option value="done">Выполнено</option>
+          </select>
+        </div>
+
         <div id="adminTasksList" class="tasks-list"></div>
       </div>
 
@@ -1378,37 +1441,160 @@ function toggleArchiveMonth(id) {
 // ADMIN
 function renderAdmin() {
   const employees = Object.entries(USERS).filter(([k,v]) => v.role === 'employee');
-  const tabs = document.getElementById('empTabs');
 
-  if (!activeEmpFilter) activeEmpFilter = employees[0]?.[0] || null;
-
-  tabs.innerHTML = employees.map(([login, u]) => {
-    const cnt = getCurrentMonthTasks(login).length;
-    return `<button class="emp-tab ${activeEmpFilter===login?'active':''}" onclick="setEmpFilter('${login}', this)">
-      <div class="et-avatar">${getInitials(u.name)}</div>
-      ${u.name.split(' ')[0]} <span style="opacity:0.6; font-size:10px;">(${cnt})</span>
-    </button>`;
-  }).join('');
-
-  renderAdminTasks();
-}
-
-function setEmpFilter(login, el) {
-  activeEmpFilter = login;
-  document.querySelectorAll('.emp-tab').forEach(b => b.classList.remove('active'));
-  el.classList.add('active');
-  renderAdminTasks();
-}
-
-function renderAdminTasks() {
+  // Build month filter
+  const mfEl = document.getElementById('adminMonthFilter');
+  const allMonths = [...new Set(tasks.map(t => getMonthKey(t.createdAt)))].sort().reverse();
   const curKey = getCurrentMonthKey();
-  const list = tasks.filter(t => t.userId === activeEmpFilter && getMonthKey(t.createdAt) === curKey);
+  const prevMon = mfEl.value;
+  mfEl.innerHTML = '';
+  allMonths.forEach(mk => {
+    const [y, mo] = mk.split('-');
+    const o = document.createElement('option');
+    o.value = mk;
+    o.textContent = MONTHS_RU[parseInt(mo)-1] + ' ' + y;
+    mfEl.appendChild(o);
+  });
+  if (!prevMon && allMonths.includes(curKey)) mfEl.value = curKey;
+  else if (prevMon) mfEl.value = prevMon;
+  if (!mfEl.value && allMonths.length) mfEl.value = allMonths[0];
+
+  // Build emp filter
+  const efEl = document.getElementById('adminEmpFilter');
+  const prevEmp = efEl.value;
+  efEl.innerHTML = '<option value="">Все сотрудники</option>';
+  employees.forEach(([login, u]) => {
+    const o = document.createElement('option');
+    o.value = login; o.textContent = u.name;
+    efEl.appendChild(o);
+  });
+  if (prevEmp) efEl.value = prevEmp;
+
+  const selMk = mfEl.value;
+  const selEmp = efEl.value;
+  const selStatus = document.getElementById('adminStatusFilter').value;
+
+  // Update sub
+  if (selMk) {
+    const [y, mo] = selMk.split('-');
+    document.getElementById('adminPageSub').textContent = MONTHS_RU[parseInt(mo)-1] + ' ' + y;
+  }
+
+  // Render labels
+  renderLabels(employees, selMk);
+
+  // Filter tasks
+  let list = tasks.filter(t => {
+    const matchMonth = selMk ? getMonthKey(t.createdAt) === selMk : true;
+    const matchEmp = selEmp ? t.userId === selEmp : true;
+    const matchStatus = selStatus ? t.status === selStatus : true;
+    return matchMonth && matchEmp && matchStatus;
+  });
+
   const el = document.getElementById('adminTasksList');
   if (!list.length) {
-    el.innerHTML = `<div class="empty"><div class="empty-icon">✦</div><div class="empty-title">Нет задач в этом месяце</div></div>`;
+    el.innerHTML = `<div class="empty"><div class="empty-icon">✦</div><div class="empty-title">Нет задач по выбранным фильтрам</div></div>`;
     return;
   }
   el.innerHTML = list.map(t => taskCardHTML(t)).join('');
+}
+
+function renderLabels(employees, selMk) {
+  const labels = JSON.parse(localStorage.getItem('oau_labels') || '{}');
+  const el = document.getElementById('labelsRow');
+
+  const LABEL_OPTS = [
+    { value: '', text: '— метка —', cls: '' },
+    { value: 'top', text: '👑 Топ', cls: 'lbl-top' },
+    { value: 'grow', text: '📈 Растёт', cls: 'lbl-grow' },
+    { value: 'better', text: '🔄 Можно лучше', cls: 'lbl-better' },
+    { value: 'behind', text: '📉 Просел', cls: 'lbl-behind' },
+  ];
+
+  const monthKey = selMk || getCurrentMonthKey();
+
+  el.innerHTML = `<div class="labels-grid">
+    ${employees.map(([login, u]) => {
+      const key = login + '_' + monthKey;
+      const cur = labels[key] || '';
+      const curOpt = LABEL_OPTS.find(o => o.value === cur);
+      const cls = curOpt?.cls || '';
+      return `<div class="label-card">
+        <div class="label-emp-name">${u.name.split(' ')[0]} ${u.name.split(' ')[1]?.[0]||''}.</div>
+        <select class="label-select ${cls}" onchange="setLabel('${login}', '${monthKey}', this)">
+          ${LABEL_OPTS.map(o => `<option value="${o.value}" ${cur===o.value?'selected':''}>${o.text}</option>`).join('')}
+        </select>
+      </div>`;
+    }).join('')}
+  </div>`;
+}
+
+function setLabel(login, monthKey, el) {
+  const labels = JSON.parse(localStorage.getItem('oau_labels') || '{}');
+  const key = login + '_' + monthKey;
+  labels[key] = el.value;
+  localStorage.setItem('oau_labels', JSON.stringify(labels));
+
+  const LABEL_CLS = { top: 'lbl-top', grow: 'lbl-grow', better: 'lbl-better', behind: 'lbl-behind' };
+  el.className = 'label-select ' + (LABEL_CLS[el.value] || '');
+}
+
+function exportAdminExcel() {
+  const mfEl = document.getElementById('adminMonthFilter');
+  const selMk = mfEl?.value || getCurrentMonthKey();
+  const efEl = document.getElementById('adminEmpFilter');
+  const selEmp = efEl?.value || '';
+  const selStatus = document.getElementById('adminStatusFilter')?.value || '';
+
+  const [y, mo] = selMk.split('-');
+  const monthName = MONTHS_RU[parseInt(mo)-1] + ' ' + y;
+
+  let list = tasks.filter(t => {
+    const matchMonth = getMonthKey(t.createdAt) === selMk;
+    const matchEmp = selEmp ? t.userId === selEmp : true;
+    const matchStatus = selStatus ? t.status === selStatus : true;
+    return matchMonth && matchEmp && matchStatus;
+  });
+
+  const LABEL_NAMES = { top: '👑 Топ', grow: '📈 Растёт', better: '🔄 Можно лучше', behind: '📉 Просел', '': '—' };
+  const labels = JSON.parse(localStorage.getItem('oau_labels') || '{}');
+
+  const data = [['Сотрудник', 'Метка', 'Задача', 'Тип', 'Статус', 'Глобальность', 'Часов', 'Описание', 'Дата']];
+  list.forEach(t => {
+    const lKey = t.userId + '_' + selMk;
+    data.push([
+      USERS[t.userId]?.name || t.userId,
+      LABEL_NAMES[labels[lKey]||''] || '—',
+      t.name, t.type || '—',
+      STATUS_MAP[t.status] || t.status,
+      GLOBAL_MAP[t.global] || t.global,
+      t.hours || 0,
+      t.desc || '—',
+      new Date(t.createdAt).toLocaleDateString('ru-RU')
+    ]);
+  });
+
+  // Summary sheet
+  const employees = Object.entries(USERS).filter(([k,v]) => v.role === 'employee');
+  const summary = [['Сотрудник', 'Метка', 'Задач', 'Часов', 'Выполнено', 'Глобальных']];
+  employees.forEach(([login, u]) => {
+    const empTasks = tasks.filter(t => t.userId === login && getMonthKey(t.createdAt) === selMk);
+    if (!empTasks.length) return;
+    const lKey = login + '_' + selMk;
+    summary.push([
+      u.name,
+      LABEL_NAMES[labels[lKey]||''] || '—',
+      empTasks.length,
+      empTasks.reduce((s,t) => s+(parseFloat(t.hours)||0), 0),
+      empTasks.filter(t => t.status==='done').length,
+      empTasks.filter(t => t.global==='global').length,
+    ]);
+  });
+
+  const wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(data), 'Задачи');
+  XLSX.utils.book_append_sheet(wb, XLSX.utils.aoa_to_sheet(summary), 'Итоги');
+  XLSX.writeFile(wb, `команда_${selMk}.xlsx`);
 }
 
 // ADMIN STATS
@@ -1428,48 +1614,84 @@ function renderAdminStats() {
   });
   if (!prevVal && months.includes(curKey)) sfEl.value = curKey;
   else if (prevVal) sfEl.value = prevVal;
+  if (!sfEl.value && months.length) sfEl.value = months[0];
 
   const selMk = sfEl.value;
   const filtered = tasks.filter(t => getMonthKey(t.createdAt) === selMk);
   const employees = Object.entries(USERS).filter(([k,v]) => v.role === 'employee');
-
-  const el = document.getElementById('adminStatsContent');
+  const labels = JSON.parse(localStorage.getItem('oau_labels') || '{}');
+  const LABEL_NAMES = { top: '👑 Топ', grow: '📈 Растёт', better: '🔄 Можно лучше', behind: '📉 Просел' };
 
   const rows = employees.map(([login, u]) => {
     const empTasks = filtered.filter(t => t.userId === login);
     const hours = empTasks.reduce((s,t) => s+(parseFloat(t.hours)||0), 0);
     const done = empTasks.filter(t => t.status==='done').length;
     const global = empTasks.filter(t => t.global==='global').length;
-    return { name: u.name, total: empTasks.length, hours, done, global };
-  }).filter(r => r.total > 0);
+    const open = empTasks.filter(t => t.status==='open').length;
+    const work = empTasks.filter(t => t.status==='work').length;
+    const lKey = login + '_' + selMk;
+    const label = labels[lKey] || '';
+    return { login, name: u.name, total: empTasks.length, hours, done, global, open, work, label };
+  }).filter(r => r.total > 0).sort((a,b) => b.hours - a.hours);
 
-  if (!rows.length) {
-    el.innerHTML = `<div class="card"><div class="empty"><div class="empty-icon">◎</div><div class="empty-title">Нет данных за этот период</div></div></div>`;
-    return;
-  }
+  // Summary cards
+  const totalTasks = filtered.length;
+  const totalHours = filtered.reduce((s,t) => s+(parseFloat(t.hours)||0), 0);
+  const totalDone = filtered.filter(t => t.status==='done').length;
+  const activeEmps = rows.length;
 
-  el.innerHTML = `<div class="card">
-    <table style="width:100%; border-collapse:collapse; font-size:13px;">
-      <thead>
-        <tr>
-          <th style="text-align:left; padding:10px 14px; border-bottom:1px solid var(--border); font-size:11px; font-weight:600; letter-spacing:0.06em; text-transform:uppercase; color:var(--text3);">Сотрудник</th>
-          <th style="text-align:center; padding:10px 14px; border-bottom:1px solid var(--border); font-size:11px; font-weight:600; letter-spacing:0.06em; text-transform:uppercase; color:var(--text3);">Задач</th>
-          <th style="text-align:center; padding:10px 14px; border-bottom:1px solid var(--border); font-size:11px; font-weight:600; letter-spacing:0.06em; text-transform:uppercase; color:var(--text3);">Часов</th>
-          <th style="text-align:center; padding:10px 14px; border-bottom:1px solid var(--border); font-size:11px; font-weight:600; letter-spacing:0.06em; text-transform:uppercase; color:var(--text3);">Выполнено</th>
-          <th style="text-align:center; padding:10px 14px; border-bottom:1px solid var(--border); font-size:11px; font-weight:600; letter-spacing:0.06em; text-transform:uppercase; color:var(--text3);">Глобальных</th>
-        </tr>
-      </thead>
-      <tbody>
-        ${rows.map(r => `<tr>
-          <td style="padding:12px 14px; border-bottom:1px solid var(--border); font-weight:600;">${r.name}</td>
-          <td style="padding:12px 14px; border-bottom:1px solid var(--border); text-align:center;">${r.total}</td>
-          <td style="padding:12px 14px; border-bottom:1px solid var(--border); text-align:center; color:var(--gold); font-weight:600;">${r.hours%1===0?r.hours:r.hours.toFixed(1)}</td>
-          <td style="padding:12px 14px; border-bottom:1px solid var(--border); text-align:center; color:#065f46;">${r.done}</td>
-          <td style="padding:12px 14px; border-bottom:1px solid var(--border); text-align:center; color:var(--accent2);">${r.global}</td>
-        </tr>`).join('')}
-      </tbody>
-    </table>
-  </div>`;
+  const el = document.getElementById('adminStatsContent');
+
+  el.innerHTML = `
+    <div class="stats-row" style="margin-bottom:1.5rem;">
+      <div class="stat-card"><div class="stat-num">${totalTasks}</div><div class="stat-label">Всего задач</div></div>
+      <div class="stat-card"><div class="stat-num">${totalHours%1===0?totalHours:totalHours.toFixed(1)}</div><div class="stat-label">Часов затрачено</div></div>
+      <div class="stat-card"><div class="stat-num">${totalDone}</div><div class="stat-label">Выполнено</div></div>
+      <div class="stat-card"><div class="stat-num">${activeEmps}</div><div class="stat-label">Активных сотрудников</div></div>
+    </div>
+    <div class="card">
+      <div style="overflow-x:auto;">
+        <table style="width:100%; border-collapse:collapse; font-size:13px;">
+          <thead>
+            <tr style="background:var(--surface2);">
+              <th style="text-align:left; padding:10px 14px; border-bottom:1px solid var(--border); font-size:11px; font-weight:600; letter-spacing:0.06em; text-transform:uppercase; color:var(--text3);">Сотрудник</th>
+              <th style="text-align:center; padding:10px 14px; border-bottom:1px solid var(--border); font-size:11px; font-weight:600; letter-spacing:0.06em; text-transform:uppercase; color:var(--text3);">Метка</th>
+              <th style="text-align:center; padding:10px 14px; border-bottom:1px solid var(--border); font-size:11px; font-weight:600; letter-spacing:0.06em; text-transform:uppercase; color:var(--text3);">Задач</th>
+              <th style="text-align:center; padding:10px 14px; border-bottom:1px solid var(--border); font-size:11px; font-weight:600; letter-spacing:0.06em; text-transform:uppercase; color:var(--text3);">Часов</th>
+              <th style="text-align:center; padding:10px 14px; border-bottom:1px solid var(--border); font-size:11px; font-weight:600; letter-spacing:0.06em; text-transform:uppercase; color:var(--text3);">Открытых</th>
+              <th style="text-align:center; padding:10px 14px; border-bottom:1px solid var(--border); font-size:11px; font-weight:600; letter-spacing:0.06em; text-transform:uppercase; color:var(--text3);">В работе</th>
+              <th style="text-align:center; padding:10px 14px; border-bottom:1px solid var(--border); font-size:11px; font-weight:600; letter-spacing:0.06em; text-transform:uppercase; color:var(--text3);">Выполнено</th>
+              <th style="text-align:center; padding:10px 14px; border-bottom:1px solid var(--border); font-size:11px; font-weight:600; letter-spacing:0.06em; text-transform:uppercase; color:var(--text3);">Глобальных</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${rows.map((r,i) => {
+              const LABEL_BADGE = {
+                top: '<span style="background:#fef9c3;color:#713f12;padding:3px 10px;border-radius:99px;font-size:11px;font-weight:600;">👑 Топ</span>',
+                grow: '<span style="background:#dcfce7;color:#14532d;padding:3px 10px;border-radius:99px;font-size:11px;font-weight:600;">📈 Растёт</span>',
+                better: '<span style="background:#dbeafe;color:#1e3a8a;padding:3px 10px;border-radius:99px;font-size:11px;font-weight:600;">🔄 Можно лучше</span>',
+                behind: '<span style="background:#fee2e2;color:#7f1d1d;padding:3px 10px;border-radius:99px;font-size:11px;font-weight:600;">📉 Просел</span>',
+              };
+              const hoursBar = totalHours > 0 ? Math.round((r.hours/totalHours)*100) : 0;
+              return `<tr style="${i%2===0?'':'background:var(--surface2)'}">
+                <td style="padding:12px 14px; border-bottom:1px solid var(--border); font-weight:600;">${r.name}</td>
+                <td style="padding:12px 14px; border-bottom:1px solid var(--border); text-align:center;">${LABEL_BADGE[r.label]||'<span style="color:var(--text3);font-size:12px;">—</span>'}</td>
+                <td style="padding:12px 14px; border-bottom:1px solid var(--border); text-align:center; font-weight:600;">${r.total}</td>
+                <td style="padding:12px 14px; border-bottom:1px solid var(--border); text-align:center;">
+                  <span style="color:var(--gold);font-weight:600;">${r.hours%1===0?r.hours:r.hours.toFixed(1)}</span>
+                  <div style="background:var(--surface3);border-radius:99px;height:3px;margin-top:4px;"><div style="background:var(--gold);height:3px;border-radius:99px;width:${hoursBar}%;"></div></div>
+                </td>
+                <td style="padding:12px 14px; border-bottom:1px solid var(--border); text-align:center; color:#92400e;">${r.open||'—'}</td>
+                <td style="padding:12px 14px; border-bottom:1px solid var(--border); text-align:center; color:#1e40af;">${r.work||'—'}</td>
+                <td style="padding:12px 14px; border-bottom:1px solid var(--border); text-align:center; color:#065f46; font-weight:600;">${r.done||'—'}</td>
+                <td style="padding:12px 14px; border-bottom:1px solid var(--border); text-align:center; color:var(--accent2);">${r.global||'—'}</td>
+              </tr>`;
+            }).join('')}
+          </tbody>
+        </table>
+      </div>
+    </div>`;
+}
 }
 
 // MODAL
@@ -1599,10 +1821,10 @@ function exportExcel() {
 }
 
 // EXPOSE GLOBALS
+window.showPage = showPage;
 window.doLogin = doLogin;
 window.doLogout = doLogout;
 window.quickLogin = quickLogin;
-window.showPage = showPage;
 window.openTaskModal = openTaskModal;
 window.openEditModal = openEditModal;
 window.closeModal = closeModal;
@@ -1611,9 +1833,11 @@ window.saveTask = saveTask;
 window.deleteTask = deleteTask;
 window.filterByStatus = filterByStatus;
 window.toggleArchiveMonth = toggleArchiveMonth;
-window.setEmpFilter = setEmpFilter;
+window.renderAdmin = renderAdmin;
 window.renderAdminStats = renderAdminStats;
 window.exportExcel = exportExcel;
+window.exportAdminExcel = exportAdminExcel;
+window.setLabel = setLabel;
 
 // INIT
 document.getElementById('passInput').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
