@@ -1761,7 +1761,9 @@ function renderBonusNav() {
 function renderBonus() {
   const adminBtns = document.getElementById('bonusAdminBtns');
   if (currentUser.role === 'admin') {
-    adminBtns.innerHTML = `<button class="btn btn-primary" onclick="openBonusImport()">⬆ Загрузить письмо</button>`;
+    adminBtns.innerHTML = `
+      <button class="btn btn-danger btn-sm" onclick="deleteAllBonus()" style="font-size:12px;">🗑 Удалить загрузку</button>
+      <button class="btn btn-primary" onclick="openBonusImport()">⬆ Загрузить письмо</button>`;
   } else {
     adminBtns.innerHTML = '';
   }
@@ -1845,20 +1847,22 @@ function renderBonus() {
           <th style="text-align:left; padding:10px 14px; border-bottom:1px solid var(--border); font-size:11px; font-weight:600; letter-spacing:0.05em; text-transform:uppercase; color:var(--text3);">Статус</th>
           <th style="text-align:left; padding:10px 14px; border-bottom:1px solid var(--border); font-size:11px; font-weight:600; letter-spacing:0.05em; text-transform:uppercase; color:var(--text3);">Исполнитель</th>
           <th style="text-align:left; padding:10px 14px; border-bottom:1px solid var(--border); font-size:11px; font-weight:600; letter-spacing:0.05em; text-transform:uppercase; color:var(--text3);">Дата</th>
+          ${currentUser.role === 'admin' ? '<th style="padding:10px 14px; border-bottom:1px solid var(--border); width:50px;"></th>' : ''}
         </tr>
       </thead>
       <tbody>
         ${list.map((b,i) => {
           const assignee = b.assignedTo ? (USERS[b.assignedTo]?.name?.split(' ').slice(0,2).join(' ') || b.assignedTo) : '—';
           const date = b.importedAt ? new Date(b.importedAt).toLocaleDateString('ru-RU') : '—';
-          return `<tr style="${i%2===0?'':'background:var(--surface2)'}" class="bonus-row" onclick="openBonusStatus('${b.id}')">
-            <td style="padding:10px 14px; border-bottom:1px solid var(--border); font-weight:500; cursor:pointer;">${b.name}</td>
-            <td style="padding:10px 14px; border-bottom:1px solid var(--border); font-family:monospace; color:var(--text2); cursor:pointer;">${b.sid}</td>
-            <td style="padding:10px 14px; border-bottom:1px solid var(--border); cursor:pointer;">
+          return `<tr style="${i%2===0?'':'background:var(--surface2)'}" class="bonus-row">
+            <td style="padding:10px 14px; border-bottom:1px solid var(--border); font-weight:500; cursor:pointer;" onclick="openBonusStatus('${b.id}')">${b.name}</td>
+            <td style="padding:10px 14px; border-bottom:1px solid var(--border); font-family:monospace; color:var(--text2); cursor:pointer;" onclick="openBonusStatus('${b.id}')">${b.sid}</td>
+            <td style="padding:10px 14px; border-bottom:1px solid var(--border); cursor:pointer;" onclick="openBonusStatus('${b.id}')">
               <span class="badge ${BONUS_BADGE_CLASS[b.status]||'badge-open'}">${BONUS_STATUS_MAP[b.status]||b.status}</span>
             </td>
-            <td style="padding:10px 14px; border-bottom:1px solid var(--border); color:var(--text2); cursor:pointer;">${assignee}</td>
-            <td style="padding:10px 14px; border-bottom:1px solid var(--border); color:var(--text3); cursor:pointer;">${date}</td>
+            <td style="padding:10px 14px; border-bottom:1px solid var(--border); color:var(--text2); cursor:pointer;" onclick="openBonusStatus('${b.id}')">${assignee}</td>
+            <td style="padding:10px 14px; border-bottom:1px solid var(--border); color:var(--text3); cursor:pointer;" onclick="openBonusStatus('${b.id}')">${date}</td>
+            ${currentUser.role === 'admin' ? `<td style="padding:6px 10px; border-bottom:1px solid var(--border);"><button class="btn btn-sm btn-danger" onclick="deleteBonusItem('${b.id}')">✕</button></td>` : ''}
           </tr>`;
         }).join('')}
       </tbody>
@@ -1998,6 +2002,36 @@ async function setBonusStatus(status) {
   renderBonus();
 }
 
+// DELETE BONUS
+async function deleteBonusItem(id) {
+  if (!confirm('Удалить эту запись?')) return;
+  try {
+    await deleteDoc(doc(db, 'oau_bonus', id));
+    bonusItems = bonusItems.filter(b => b.id !== id);
+    renderBonus();
+    renderBonusNav();
+  } catch(e) { console.error(e); }
+}
+
+async function deleteAllBonus() {
+  const dateF = document.getElementById('bonusDateFilter')?.value;
+  const label = dateF ? `все записи за ${new Date(dateF+'T00:00:00').toLocaleDateString('ru-RU', {day:'numeric',month:'long'})}` : 'ВСЕ записи О!Бонус';
+  if (!confirm(`Удалить ${label}? Это действие нельзя отменить.`)) return;
+
+  const toDelete = dateF
+    ? bonusItems.filter(b => b.importedAt?.split('T')[0] === dateF)
+    : bonusItems;
+
+  try {
+    for (const b of toDelete) {
+      await deleteDoc(doc(db, 'oau_bonus', b.id));
+    }
+    bonusItems = dateF ? bonusItems.filter(b => b.importedAt?.split('T')[0] !== dateF) : [];
+    renderBonus();
+    renderBonusNav();
+  } catch(e) { console.error(e); }
+}
+
 // EXPOSE GLOBALS
 window.showPage = showPage;
 window.doLogin = doLogin;
@@ -2025,7 +2059,10 @@ window.importBonus = importBonus;
 window.openBonusStatus = openBonusStatus;
 window.closeBonusStatusModal = closeBonusStatusModal;
 window.closeBonusStatusOutside = closeBonusStatusOutside;
+window.setBonusStatus = setBonusStatus;
 window.exportBonusExcel = exportBonusExcel;
+window.deleteBonusItem = deleteBonusItem;
+window.deleteAllBonus = deleteAllBonus;
 
 // INIT
 document.getElementById('passInput').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
