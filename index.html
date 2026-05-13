@@ -531,7 +531,7 @@ body {
 /* LABELS */
 .labels-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
   gap: 8px; margin-bottom: 0;
   width: 100%;
 }
@@ -540,13 +540,17 @@ body {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-sm);
-  padding: 10px 12px;
-  display: flex; align-items: center;
-  justify-content: space-between; gap: 8px;
-  min-width: 0; overflow: hidden;
+  padding: 12px 14px;
+  display: flex; flex-direction: column;
+  align-items: center; gap: 8px;
+  min-width: 0; text-align: center;
 }
 
-.label-emp-name { font-size: 12px; font-weight: 500; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; flex: 1; }
+.label-emp-name {
+  font-size: 12px; font-weight: 600; color: var(--text);
+  white-space: nowrap; overflow: hidden;
+  text-overflow: ellipsis; width: 100%; text-align: center;
+}
 
 .label-select {
   background: var(--surface2);
@@ -1352,9 +1356,11 @@ function renderLabels(employees, selMk) {
       const cur = labelsCache[key] || '';
       const curOpt = LABEL_OPTS.find(o => o.value === cur);
       const cls = curOpt?.cls || '';
+      const nameParts = u.name.split(' ');
+      const displayName = nameParts.length >= 2 ? nameParts[0] + ' ' + nameParts[1] : u.name;
       return `<div class="label-card">
-        <div class="label-emp-name">${u.name.split(' ')[0]} ${u.name.split(' ')[1]?.[0]||''}.</div>
-        <select class="label-select ${cls}" onchange="setLabel('${login}', '${monthKey}', this)">
+        <div class="label-emp-name">${displayName}</div>
+        <select class="label-select ${cls}" onchange="setLabel('${login}', '${monthKey}', this)" style="width:100%; text-align:center;">
           ${LABEL_OPTS.map(o => `<option value="${o.value}" ${cur===o.value?'selected':''}>${o.text}</option>`).join('')}
         </select>
       </div>`;
