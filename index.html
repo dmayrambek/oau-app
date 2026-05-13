@@ -1135,7 +1135,7 @@ body {
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getFirestore, collection, addDoc, getDocs, deleteDoc, updateDoc, doc, query, orderBy, where } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getFirestore, collection, addDoc, getDocs, deleteDoc, updateDoc, doc, query, orderBy, where, setDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyCqivWIV1G68qZO7XFwCcEQAek9d7otxPY",
@@ -1271,7 +1271,7 @@ async function startApp() {
     document.getElementById('mobileAdminBtn').style.display = 'flex';
   }
 
-  await loadTasks();
+  await Promise.all([loadTasks(), loadLabels()]);
   renderTasks();
   renderStats();
   updateTypeSuggestions();
@@ -1499,8 +1499,17 @@ function renderAdmin() {
   el.innerHTML = list.map(t => taskCardHTML(t)).join('');
 }
 
+let labelsCache = {};
+
+async function loadLabels() {
+  try {
+    const snap = await getDocs(collection(db, 'oau_labels'));
+    labelsCache = {};
+    snap.docs.forEach(d => { labelsCache[d.id] = d.data().value; });
+  } catch(e) { labelsCache = {}; }
+}
+
 function renderLabels(employees, selMk) {
-  const labels = JSON.parse(localStorage.getItem('oau_labels') || '{}');
   const el = document.getElementById('labelsRow');
 
   const LABEL_OPTS = [
@@ -1516,7 +1525,7 @@ function renderLabels(employees, selMk) {
   el.innerHTML = `<div class="labels-grid">
     ${employees.map(([login, u]) => {
       const key = login + '_' + monthKey;
-      const cur = labels[key] || '';
+      const cur = labelsCache[key] || '';
       const curOpt = LABEL_OPTS.find(o => o.value === cur);
       const cls = curOpt?.cls || '';
       return `<div class="label-card">
@@ -1529,14 +1538,17 @@ function renderLabels(employees, selMk) {
   </div>`;
 }
 
-function setLabel(login, monthKey, el) {
-  const labels = JSON.parse(localStorage.getItem('oau_labels') || '{}');
+async function setLabel(login, monthKey, el) {
   const key = login + '_' + monthKey;
-  labels[key] = el.value;
-  localStorage.setItem('oau_labels', JSON.stringify(labels));
+  const value = el.value;
+  labelsCache[key] = value;
 
   const LABEL_CLS = { top: 'lbl-top', grow: 'lbl-grow', better: 'lbl-better', behind: 'lbl-behind' };
-  el.className = 'label-select ' + (LABEL_CLS[el.value] || '');
+  el.className = 'label-select ' + (LABEL_CLS[value] || '');
+
+  try {
+    await setDoc(doc(db, 'oau_labels', key), { value });
+  } catch(e) { console.error(e); }
 }
 
 function exportAdminExcel() {
@@ -1557,7 +1569,7 @@ function exportAdminExcel() {
   });
 
   const LABEL_NAMES = { top: '👑 Топ', grow: '📈 Растёт', better: '🔄 Можно лучше', behind: '📉 Просел', '': '—' };
-  const labels = JSON.parse(localStorage.getItem('oau_labels') || '{}');
+  const labels = labelsCache;
 
   const data = [['Сотрудник', 'Метка', 'Задача', 'Тип', 'Статус', 'Глобальность', 'Часов', 'Описание', 'Дата']];
   list.forEach(t => {
@@ -1619,7 +1631,7 @@ function renderAdminStats() {
   const selMk = sfEl.value;
   const filtered = tasks.filter(t => getMonthKey(t.createdAt) === selMk);
   const employees = Object.entries(USERS).filter(([k,v]) => v.role === 'employee');
-  const labels = JSON.parse(localStorage.getItem('oau_labels') || '{}');
+  const labels = labelsCache;
   const LABEL_NAMES = { top: '👑 Топ', grow: '📈 Растёт', better: '🔄 Можно лучше', behind: '📉 Просел' };
 
   const rows = employees.map(([login, u]) => {
