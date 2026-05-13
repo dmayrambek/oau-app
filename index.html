@@ -9,27 +9,26 @@
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 
 :root {
-  --bg: #060e1a;
-  --surface: #091828;
-  --surface2: #0d2035;
-  --surface3: #122640;
-  --border: rgba(14,165,233,0.1);
-  --border2: rgba(14,165,233,0.2);
-  --text: #e0f2fe;
-  --text2: #7cb9d8;
-  --text3: #3a6a85;
-  --accent: #0ea5e9;
-  --accent2: #38bdf8;
-  --accent-light: rgba(14,165,233,0.1);
-  --gold: #d29922;
-  --gold-light: rgba(210,153,34,0.1);
+  --bg: #0f0f10;
+  --surface: #161618;
+  --surface2: #1c1c1f;
+  --surface3: #242428;
+  --border: rgba(255,255,255,0.06);
+  --border2: rgba(255,255,255,0.1);
+  --text: #ededee;
+  --text2: #8a8a90;
+  --text3: #55555c;
+  --accent: #5e6ad2;
+  --accent2: #7c87e0;
+  --accent-light: rgba(94,106,210,0.12);
+  --gold: #e8a84a;
+  --gold-light: rgba(232,168,74,0.12);
   --radius: 12px;
   --radius-sm: 8px;
   --radius-xs: 6px;
-  --shadow: 0 1px 3px rgba(0,0,0,0.3);
-  --shadow-lg: 0 8px 32px rgba(0,0,0,0.5);
-  --sidebar-bg: #060e1a;
-  --theme-glow: rgba(14,165,233,0.06);
+  --shadow: 0 1px 2px rgba(0,0,0,0.3);
+  --shadow-lg: 0 8px 32px rgba(0,0,0,0.4);
+  --sidebar-bg: #0f0f10;
 }
 
 body.theme-midnight {
@@ -37,8 +36,8 @@ body.theme-midnight {
   --surface: #12122a;
   --surface2: #181830;
   --surface3: #1e1e38;
-  --border: rgba(167,139,250,0.1);
-  --border2: rgba(167,139,250,0.2);
+  --border: rgba(167,139,250,0.08);
+  --border2: rgba(167,139,250,0.15);
   --text: #ede9fe;
   --text2: #9d8fcc;
   --text3: #4a4070;
@@ -46,7 +45,6 @@ body.theme-midnight {
   --accent2: #a78bfa;
   --accent-light: rgba(124,58,237,0.1);
   --sidebar-bg: #080818;
-  --theme-glow: rgba(124,58,237,0.06);
 }
 
 body {
@@ -78,7 +76,7 @@ body {
   content: '';
   position: absolute;
   width: 500px; height: 500px;
-  background: radial-gradient(circle, rgba(14,165,233,0.08) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(94,106,210,0.08) 0%, transparent 70%);
   top: -100px; right: -100px;
   pointer-events: none;
 }
@@ -450,10 +448,10 @@ body {
   font-size: 11px; font-weight: 500; white-space: nowrap;
 }
 
-.badge-open { background: rgba(210,153,34,0.15); color: #e3b341; border: 1px solid rgba(210,153,34,0.3); }
-.badge-work { background: rgba(56,139,253,0.15); color: #79c0ff; border: 1px solid rgba(56,139,253,0.3); }
-.badge-done { background: rgba(63,185,80,0.15); color: #56d364; border: 1px solid rgba(63,185,80,0.3); }
-.badge-pause { background: rgba(188,140,255,0.15); color: #d2a8ff; border: 1px solid rgba(188,140,255,0.3); }
+.badge-open { background: rgba(251,191,36,0.12); color: #fbbf24; }
+.badge-work { background: rgba(96,165,250,0.12); color: #60a5fa; }
+.badge-done { background: rgba(52,211,153,0.12); color: #34d399; }
+.badge-pause { background: rgba(167,139,250,0.12); color: #a78bfa; }
 
 /* TASKS LIST */
 .tasks-list { display: flex; flex-direction: column; gap: 6px; }
@@ -669,26 +667,11 @@ body {
 .theme-dot-ocean { width: 10px; height: 10px; border-radius: 50%; background: #0ea5e9; flex-shrink: 0; }
 .theme-dot-midnight { width: 10px; height: 10px; border-radius: 50%; background: #7c3aed; flex-shrink: 0; }
 
-/* THEME BACKGROUND GLOW */
-body::after {
-  content: '';
-  position: fixed;
-  width: 600px; height: 600px;
-  background: radial-gradient(circle, var(--theme-glow) 0%, transparent 70%);
-  top: -200px; right: -100px;
-  pointer-events: none;
-  z-index: 0;
-}
-
 .main { position: relative; z-index: 1; }
 
-/* OCEAN badge overrides */
-body:not(.theme-midnight) .badge-open { background: rgba(251,191,36,0.12); color: #fcd34d; border: 1px solid rgba(251,191,36,0.25); }
-body:not(.theme-midnight) .badge-work { background: rgba(14,165,233,0.12); color: #7dd3fc; border: 1px solid rgba(14,165,233,0.25); }
-body:not(.theme-midnight) .badge-done { background: rgba(52,211,153,0.12); color: #6ee7b7; border: 1px solid rgba(52,211,153,0.25); }
-body:not(.theme-midnight) .badge-pause { background: rgba(167,139,250,0.12); color: #c4b5fd; border: 1px solid rgba(167,139,250,0.25); }
-
 .fade-in { animation: fadeIn 0.2s ease; }
+
+@keyframes fadeIn {
   from { opacity: 0; transform: translateY(6px); }
   to { opacity: 1; transform: translateY(0); }
 }
@@ -779,6 +762,11 @@ body:not(.theme-midnight) .badge-pause { background: rgba(167,139,250,0.12); col
       </div>
       <div class="sidebar-bottom">
         <div class="sidebar-sep"></div>
+        <button class="theme-switcher" onclick="toggleTheme()" id="themeSwitcherBtn" style="width:100%; margin-bottom:8px;">
+          <span id="themeDot" style="width:8px;height:8px;border-radius:50%;background:var(--accent);flex-shrink:0;display:inline-block;"></span>
+          <span id="themeLabel" style="flex:1;text-align:left;">Standard</span>
+          <span style="opacity:0.4; font-size:10px;">⇄</span>
+        </button>
         <button class="logout-btn" onclick="doLogout()">⎋ Выйти</button>
       </div>
     </nav>
@@ -792,13 +780,7 @@ body:not(.theme-midnight) .badge-pause { background: rgba(167,139,250,0.12); col
     </div>
 
     <main class="main">
-      <div style="display:flex; justify-content:flex-end; margin-bottom:0.5rem;">
-        <button class="theme-switcher" onclick="toggleTheme()" id="themeSwitcherBtn">
-          <span class="theme-dot-ocean" id="themeDot"></span>
-          <span id="themeLabel">Ocean</span>
-          <span style="opacity:0.4;">⇄</span>
-        </button>
-      </div>
+
 
       <!-- TASKS PAGE -->
       <div id="pg-tasks" class="page active fade-in">
@@ -2215,12 +2197,12 @@ async function sendNotification(subject, message) {
 
 // THEMES
 function initTheme() {
-  const saved = localStorage.getItem('oau_theme') || 'ocean';
+  const saved = localStorage.getItem('oau_theme') || 'standard';
   applyTheme(saved);
 }
 
 function applyTheme(theme) {
-  document.body.classList.remove('theme-midnight', 'theme-ocean');
+  document.body.classList.remove('theme-midnight');
   if (theme === 'midnight') {
     document.body.classList.add('theme-midnight');
   }
@@ -2230,8 +2212,8 @@ function applyTheme(theme) {
 }
 
 function toggleTheme() {
-  const cur = localStorage.getItem('oau_theme') || 'ocean';
-  applyTheme(cur === 'ocean' ? 'midnight' : 'ocean');
+  const cur = localStorage.getItem('oau_theme') || 'standard';
+  applyTheme(cur === 'standard' ? 'midnight' : 'standard');
 }
 
 function updateThemeBtn(theme) {
@@ -2239,11 +2221,11 @@ function updateThemeBtn(theme) {
   const label = document.getElementById('themeLabel');
   if (!dot || !label) return;
   if (theme === 'midnight') {
-    dot.className = 'theme-dot-midnight';
+    dot.style.background = '#a78bfa';
     label.textContent = 'Midnight';
   } else {
-    dot.className = 'theme-dot-ocean';
-    label.textContent = 'Ocean';
+    dot.style.background = 'var(--accent)';
+    label.textContent = 'Standard';
   }
 }
 
