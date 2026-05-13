@@ -870,10 +870,10 @@ body {
     <div class="modal-title" id="bonusStatusTitle">Изменить статус</div>
     <div style="font-size:13px; color:var(--text2); margin-bottom:1.25rem;" id="bonusStatusPartner"></div>
 
-    <div class="field" style="margin-bottom:1rem;">
-      <label class="f-label">Категория исключения (необязательно)</label>
+    <div class="field" style="margin-bottom:1rem; display:none;" id="bonusCategoryField">
+      <label class="f-label">Причина (категория исключения)</label>
       <select class="f-select" id="bonusCategorySelect">
-        <option value="">— Без категории —</option>
+        <option value="">— Выберите причину —</option>
         <option value="banks">🏦 Банки и платёжные организации</option>
         <option value="taxi">🚕 Все сервисы такси (Яндекс, Вб)</option>
         <option value="test">🧪 Тестовые точки</option>
@@ -881,14 +881,14 @@ body {
         <option value="suspicious">⚠️ Сомнительные SID (непонятное название)</option>
         <option value="pawnshop">🏪 Ломбарды</option>
       </select>
-      <div style="font-size:11px; color:var(--text3); margin-top:5px;">Записи с категорией не учитываются в % обработки</div>
+      <div style="font-size:11px; color:var(--text3); margin-top:5px;">Записи с причиной не учитываются в % обработки</div>
     </div>
 
     <div style="display:flex; flex-direction:column; gap:8px;">
       <button class="btn" onclick="setBonusStatus('open')" style="justify-content:flex-start; gap:10px;"><span style="width:8px;height:8px;border-radius:50%;background:#fbbf24;flex-shrink:0;"></span> Открытый</button>
       <button class="btn" onclick="setBonusStatus('work')" style="justify-content:flex-start; gap:10px;"><span style="width:8px;height:8px;border-radius:50%;background:#60a5fa;flex-shrink:0;"></span> В работе</button>
       <button class="btn" onclick="setBonusStatus('done')" style="justify-content:flex-start; gap:10px;"><span style="width:8px;height:8px;border-radius:50%;background:#34d399;flex-shrink:0;"></span> Обработано</button>
-      <button class="btn" onclick="setBonusStatus('skip')" style="justify-content:flex-start; gap:10px;"><span style="width:8px;height:8px;border-radius:50%;background:#f87171;flex-shrink:0;"></span> Не обработано</button>
+      <button class="btn" onclick="showCategoryThenSkip()" style="justify-content:flex-start; gap:10px;"><span style="width:8px;height:8px;border-radius:50%;background:#f87171;flex-shrink:0;"></span> Не обработано</button>
     </div>
     <div class="modal-actions">
       <button class="btn btn-ghost" onclick="closeBonusStatusModal()">Закрыть</button>
@@ -1995,22 +1995,23 @@ function openBonusStatus(id) {
   document.getElementById('bonusStatusTitle').textContent = 'Изменить статус';
   document.getElementById('bonusStatusPartner').innerHTML = `<strong>${b.name}</strong><br><span style="font-family:monospace; color:var(--accent2);">SID: ${b.sid}</span>`;
   document.getElementById('bonusCategorySelect').value = b.category || '';
+  document.getElementById('bonusCategoryField').style.display = 'none';
   document.getElementById('bonusStatusModal').style.display = 'flex';
 }
 
-function closeBonusStatusModal() {
-  document.getElementById('bonusStatusModal').style.display = 'none';
-  bonusEditingId = null;
-}
-
-function closeBonusStatusOutside(e) {
-  if (e.target === document.getElementById('bonusStatusModal')) closeBonusStatusModal();
+function showCategoryThenSkip() {
+  const field = document.getElementById('bonusCategoryField');
+  if (field.style.display === 'none') {
+    field.style.display = 'block';
+  } else {
+    setBonusStatus('skip');
+  }
 }
 
 async function setBonusStatus(status) {
   if (!bonusEditingId) return;
   const now = new Date().toISOString();
-  const category = document.getElementById('bonusCategorySelect').value;
+  const category = status === 'skip' ? (document.getElementById('bonusCategorySelect').value || null) : null;
 
   // Назначаем на текущего пользователя при любом статусе кроме открытого
   const assignedTo = status !== 'open' ? currentUser.login : null;
@@ -2019,7 +2020,7 @@ async function setBonusStatus(status) {
   if (idx !== -1) {
     bonusItems[idx].status = status;
     bonusItems[idx].assignedTo = assignedTo;
-    bonusItems[idx].category = category || null;
+    bonusItems[idx].category = category;
     bonusItems[idx].updatedAt = now;
     bonusItems[idx]._new = false;
   }
@@ -2031,7 +2032,7 @@ async function setBonusStatus(status) {
     await updateDoc(doc(db, 'oau_bonus', bonusEditingId), {
       status,
       assignedTo,
-      category: category || null,
+      category,
       updatedAt: now,
       updatedBy: currentUser.login,
       _new: false
@@ -2041,6 +2042,15 @@ async function setBonusStatus(status) {
     await loadBonusItems();
     renderBonus();
   }
+}
+
+function closeBonusStatusModal() {
+  document.getElementById('bonusStatusModal').style.display = 'none';
+  bonusEditingId = null;
+}
+
+function closeBonusStatusOutside(e) {
+  if (e.target === document.getElementById('bonusStatusModal')) closeBonusStatusModal();
 }
 
 // DELETE BONUS
@@ -2111,6 +2121,7 @@ window.closeBonusModalOutside = closeBonusModalOutside;
 window.parseBonusText = parseBonusText;
 window.importBonus = importBonus;
 window.openBonusStatus = openBonusStatus;
+window.showCategoryThenSkip = showCategoryThenSkip;
 window.closeBonusStatusModal = closeBonusStatusModal;
 window.closeBonusStatusOutside = closeBonusStatusOutside;
 window.setBonusStatus = setBonusStatus;
