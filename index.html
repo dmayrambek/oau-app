@@ -5,6 +5,17 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>OAU — Operational Automation Unit</title>
 <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<script>
+// Скрыть loginPage сразу если есть сессия
+if (localStorage.getItem('oau_session')) {
+  document.addEventListener('DOMContentLoaded', function() {
+    var lp = document.getElementById('loginPage');
+    var ap = document.getElementById('appPage');
+    if (lp) lp.style.display = 'none';
+    if (ap) ap.style.display = 'block';
+  });
+}
+</script>
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 
@@ -68,6 +79,11 @@ body {
   justify-content: center;
   padding: 2rem;
   background: var(--bg);
+  position: relative;
+  overflow: hidden;
+}
+
+#loginPage.hidden { display: none !important; }
   position: relative;
   overflow: hidden;
 }
@@ -1362,7 +1378,8 @@ function renderTasks() {
   const now = new Date();
   const monthName = MONTHS_RU[now.getMonth()] + ' ' + now.getFullYear();
 
-  document.getElementById('tasksPageSub').textContent = monthName;
+  const subEl = document.getElementById('tasksPageSub');
+  if (subEl) subEl.textContent = monthName;
 
   let list = tasks.filter(t => {
     const mk = getMonthKey(t.createdAt);
