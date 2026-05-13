@@ -531,8 +531,9 @@ body {
 /* LABELS */
 .labels-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
   gap: 8px; margin-bottom: 0;
+  width: 100%;
 }
 
 .label-card {
@@ -542,9 +543,10 @@ body {
   padding: 10px 12px;
   display: flex; align-items: center;
   justify-content: space-between; gap: 8px;
+  min-width: 0; overflow: hidden;
 }
 
-.label-emp-name { font-size: 12px; font-weight: 500; color: var(--text); }
+.label-emp-name { font-size: 12px; font-weight: 500; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; flex: 1; }
 
 .label-select {
   background: var(--surface2);
@@ -1088,6 +1090,8 @@ async function startApp() {
   if (currentUser.role === 'admin') {
     document.getElementById('adminNav').style.display = 'block';
     document.getElementById('mobileAdminBtn').style.display = 'flex';
+    document.getElementById('tasksPageTitle').textContent = 'Все задачи';
+    document.getElementById('navTasks').innerHTML = '<span class="ni">✦</span> Все задачи';
   }
 
   await Promise.all([loadTasks(), loadLabels(), loadBonusItems()]);
