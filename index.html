@@ -1301,7 +1301,7 @@ async function startApp() {
   }
 
   await Promise.all([loadTasks(), loadLabels(), loadBonusItems(), loadKBArticles()]);
-  renderTasks();
+  showPage('tasks', document.getElementById('navTasks'));
   renderStats();
   updateTypeSuggestions();
   renderBonusNav();
