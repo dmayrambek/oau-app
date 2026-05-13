@@ -9,18 +9,18 @@
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 
 :root {
-  --bg: #0d1117;
-  --surface: #161b22;
-  --surface2: #1c2128;
-  --surface3: #242a33;
-  --border: rgba(255,255,255,0.07);
-  --border2: rgba(255,255,255,0.12);
-  --text: #e6edf3;
-  --text2: #7d8590;
-  --text3: #484f58;
-  --accent: #388bfd;
-  --accent2: #58a6ff;
-  --accent-light: rgba(56,139,253,0.1);
+  --bg: #060e1a;
+  --surface: #091828;
+  --surface2: #0d2035;
+  --surface3: #122640;
+  --border: rgba(14,165,233,0.1);
+  --border2: rgba(14,165,233,0.2);
+  --text: #e0f2fe;
+  --text2: #7cb9d8;
+  --text3: #3a6a85;
+  --accent: #0ea5e9;
+  --accent2: #38bdf8;
+  --accent-light: rgba(14,165,233,0.1);
   --gold: #d29922;
   --gold-light: rgba(210,153,34,0.1);
   --radius: 12px;
@@ -28,6 +28,25 @@
   --radius-xs: 6px;
   --shadow: 0 1px 3px rgba(0,0,0,0.3);
   --shadow-lg: 0 8px 32px rgba(0,0,0,0.5);
+  --sidebar-bg: #060e1a;
+  --theme-glow: rgba(14,165,233,0.06);
+}
+
+body.theme-midnight {
+  --bg: #0c0c1a;
+  --surface: #12122a;
+  --surface2: #181830;
+  --surface3: #1e1e38;
+  --border: rgba(167,139,250,0.1);
+  --border2: rgba(167,139,250,0.2);
+  --text: #ede9fe;
+  --text2: #9d8fcc;
+  --text3: #4a4070;
+  --accent: #7c3aed;
+  --accent2: #a78bfa;
+  --accent-light: rgba(124,58,237,0.1);
+  --sidebar-bg: #080818;
+  --theme-glow: rgba(124,58,237,0.06);
 }
 
 body {
@@ -59,7 +78,7 @@ body {
   content: '';
   position: absolute;
   width: 500px; height: 500px;
-  background: radial-gradient(circle, rgba(56,139,253,0.06) 0%, transparent 70%);
+  background: radial-gradient(circle, rgba(14,165,233,0.08) 0%, transparent 70%);
   top: -100px; right: -100px;
   pointer-events: none;
 }
@@ -215,7 +234,7 @@ body {
 /* SIDEBAR */
 .sidebar {
   width: 240px;
-  background: #0d1117;
+  background: var(--sidebar-bg);
   border-right: 1px solid var(--border);
   display: flex; flex-direction: column;
   padding: 1.25rem 0.75rem;
@@ -630,9 +649,46 @@ body {
 .mobile-nav-item.active { color: var(--accent2); }
 .mobile-nav-item .ni { font-size: 18px; }
 
-.fade-in { animation: fadeIn 0.2s ease; }
+.theme-switcher {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 12px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border2);
+  background: var(--surface2);
+  color: var(--text2);
+  font-family: 'Inter', sans-serif;
+  font-size: 12px; font-weight: 500;
+  cursor: pointer;
+  transition: all 0.15s;
+}
 
-@keyframes fadeIn {
+.theme-switcher:hover { background: var(--surface3); color: var(--text); }
+
+.theme-dot-ocean { width: 10px; height: 10px; border-radius: 50%; background: #0ea5e9; flex-shrink: 0; }
+.theme-dot-midnight { width: 10px; height: 10px; border-radius: 50%; background: #7c3aed; flex-shrink: 0; }
+
+/* THEME BACKGROUND GLOW */
+body::after {
+  content: '';
+  position: fixed;
+  width: 600px; height: 600px;
+  background: radial-gradient(circle, var(--theme-glow) 0%, transparent 70%);
+  top: -200px; right: -100px;
+  pointer-events: none;
+  z-index: 0;
+}
+
+.main { position: relative; z-index: 1; }
+
+/* OCEAN badge overrides */
+body:not(.theme-midnight) .badge-open { background: rgba(251,191,36,0.12); color: #fcd34d; border: 1px solid rgba(251,191,36,0.25); }
+body:not(.theme-midnight) .badge-work { background: rgba(14,165,233,0.12); color: #7dd3fc; border: 1px solid rgba(14,165,233,0.25); }
+body:not(.theme-midnight) .badge-done { background: rgba(52,211,153,0.12); color: #6ee7b7; border: 1px solid rgba(52,211,153,0.25); }
+body:not(.theme-midnight) .badge-pause { background: rgba(167,139,250,0.12); color: #c4b5fd; border: 1px solid rgba(167,139,250,0.25); }
+
+.fade-in { animation: fadeIn 0.2s ease; }
   from { opacity: 0; transform: translateY(6px); }
   to { opacity: 1; transform: translateY(0); }
 }
@@ -736,6 +792,13 @@ body {
     </div>
 
     <main class="main">
+      <div style="display:flex; justify-content:flex-end; margin-bottom:0.5rem;">
+        <button class="theme-switcher" onclick="toggleTheme()" id="themeSwitcherBtn">
+          <span class="theme-dot-ocean" id="themeDot"></span>
+          <span id="themeLabel">Ocean</span>
+          <span style="opacity:0.4;">⇄</span>
+        </button>
+      </div>
 
       <!-- TASKS PAGE -->
       <div id="pg-tasks" class="page active fade-in">
@@ -2150,6 +2213,61 @@ async function sendNotification(subject, message) {
   }
 }
 
+// THEMES
+function initTheme() {
+  const saved = localStorage.getItem('oau_theme') || 'ocean';
+  applyTheme(saved);
+}
+
+function applyTheme(theme) {
+  document.body.classList.remove('theme-midnight', 'theme-ocean');
+  if (theme === 'midnight') {
+    document.body.classList.add('theme-midnight');
+  }
+  localStorage.setItem('oau_theme', theme);
+  updateThemeBtn(theme);
+  updateStars(theme);
+}
+
+function toggleTheme() {
+  const cur = localStorage.getItem('oau_theme') || 'ocean';
+  applyTheme(cur === 'ocean' ? 'midnight' : 'ocean');
+}
+
+function updateThemeBtn(theme) {
+  const dot = document.getElementById('themeDot');
+  const label = document.getElementById('themeLabel');
+  if (!dot || !label) return;
+  if (theme === 'midnight') {
+    dot.className = 'theme-dot-midnight';
+    label.textContent = 'Midnight';
+  } else {
+    dot.className = 'theme-dot-ocean';
+    label.textContent = 'Ocean';
+  }
+}
+
+function updateStars(theme) {
+  let starsEl = document.getElementById('bgStars');
+  if (theme === 'midnight') {
+    if (!starsEl) {
+      starsEl = document.createElement('div');
+      starsEl.id = 'bgStars';
+      starsEl.style.cssText = 'position:fixed;inset:0;pointer-events:none;z-index:0;overflow:hidden;';
+      for(let i=0;i<80;i++){
+        const s=document.createElement('div');
+        const sz=Math.random()*1.8+0.3;
+        s.style.cssText=`position:absolute;width:${sz}px;height:${sz}px;border-radius:50%;background:#fff;left:${Math.random()*100}%;top:${Math.random()*100}%;opacity:${Math.random()*0.5+0.1};`;
+        starsEl.appendChild(s);
+      }
+      document.body.appendChild(starsEl);
+    }
+    starsEl.style.display = 'block';
+  } else {
+    if (starsEl) starsEl.style.display = 'none';
+  }
+}
+
 // EXPOSE GLOBALS
 window.showPage = showPage;
 window.doLogin = doLogin;
@@ -2180,6 +2298,7 @@ window.backToStatusButtons = backToStatusButtons;
 window.closeBonusStatusModal = closeBonusStatusModal;
 window.closeBonusStatusOutside = closeBonusStatusOutside;
 window.setBonusStatus = setBonusStatus;
+window.toggleTheme = toggleTheme;
 window.exportBonusExcel = exportBonusExcel;
 window.deleteBonusItem = deleteBonusItem;
 window.deleteAllBonus = deleteAllBonus;
@@ -2189,6 +2308,7 @@ document.getElementById('passInput').addEventListener('keydown', e => { if (e.ke
 document.getElementById('loginInput').addEventListener('keydown', e => { if (e.key === 'Enter') doLogin(); });
 
 loadSavedAccounts();
+initTheme();
 const session = localStorage.getItem('oau_session');
 if (session && USERS[session]) loginAs(session);
 </script>
