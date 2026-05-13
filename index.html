@@ -640,6 +640,7 @@ body {
 .page { display: none; }
 .page.active { display: block; }
 </style>
+<script src="https://cdn.jsdelivr.net/npm/@emailjs/browser@4/dist/email.min.js"></script>
 </head>
 <body>
 
@@ -1704,6 +1705,14 @@ async function saveTask() {
       data.createdAt = new Date().toISOString();
       const ref = await addDoc(collection(db, 'oau_tasks'), data);
       tasks.unshift({ id: ref.id, ...data });
+
+      // Уведомление о новой задаче (только если не admin сам себе)
+      if (currentUser.role !== 'admin') {
+        sendNotification(
+          `📋 OAU — Новая задача`,
+          `Сотрудник: ${currentUser.name}\nЗадача: ${data.name}\nТип: ${data.type || '—'}\nСтатус: ${STATUS_MAP[data.status]}\nГлобальность: ${GLOBAL_MAP[data.global]}\nЧасов: ${data.hours || 0}\n\n🔗 https://dmayrambek.github.io/oau-app/`
+        );
+      }
     }
   } catch(e) { console.error(e); }
 
@@ -2004,6 +2013,13 @@ async function importBonus() {
   renderBonusNav();
   btn.disabled = false;
   btn.textContent = '⬆ Импортировать';
+
+  // Уведомление о новых SID
+  const today = new Date().toLocaleDateString('ru-RU', {day:'numeric', month:'long', year:'numeric'});
+  sendNotification(
+    `OAU — Загружены новые SID`,
+    `Загружены новые SID\nКоличество: ${bonusParsed.length} шт.\nДата: ${today}\n\n🔗 https://dmayrambek.github.io/oau-app/`
+  );
 }
 
 // STATUS CHANGE
@@ -2116,6 +2132,21 @@ async function deleteAllBonus() {
     console.error(e);
     await loadBonusItems();
     renderBonus();
+  }
+}
+
+// EMAILJS
+const EMAILJS_SERVICE = 'service_oau';
+const EMAILJS_TEMPLATE = 'template_e9gk3bi';
+const EMAILJS_KEY = 'W3Ea76bNw0wn1dsD1';
+
+emailjs.init(EMAILJS_KEY);
+
+async function sendNotification(subject, message) {
+  try {
+    await emailjs.send(EMAILJS_SERVICE, EMAILJS_TEMPLATE, { subject, message });
+  } catch(e) {
+    console.error('EmailJS error:', e);
   }
 }
 
