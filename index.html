@@ -239,8 +239,13 @@ body {
   display: flex; flex-direction: column;
   padding: 1.25rem 0.75rem;
   position: fixed; top: 0; left: 0; bottom: 0;
-  z-index: 10; overflow-y: auto;
+  z-index: 10;
+  overflow: hidden;
 }
+
+.sidebar nav, .sidebar > * { flex-shrink: 0; }
+
+.sidebar-bottom { margin-top: auto; flex-shrink: 0; }
 
 .sidebar-brand {
   display: flex; align-items: center; gap: 9px;
@@ -311,8 +316,6 @@ body {
 .nav-item.active .ni { opacity: 1; color: var(--accent2); }
 
 .sidebar-sep { height: 1px; background: var(--border); margin: 0.75rem 0; }
-
-.sidebar-bottom { margin-top: auto; }
 
 .logout-btn {
   display: flex; align-items: center; gap: 8px;
@@ -802,6 +805,7 @@ body {
       </div>
 
       <div class="nav-label">Меню</div>
+      <div style="flex:1; overflow-y:auto; overflow-x:hidden; min-height:0;">
       <button class="nav-item active" onclick="showPage('tasks', this)" id="navTasks">
         <span class="ni">✦</span> Мои задачи
       </button>
@@ -823,6 +827,7 @@ body {
           <span class="ni">◎</span> Статистика
         </button>
       </div>
+      </div><!-- end nav scroll -->
       <div class="sidebar-bottom">
         <div class="sidebar-sep"></div>
         <button class="theme-switcher" onclick="toggleTheme()" id="themeSwitcherBtn" style="width:100%; margin-bottom:8px;">
