@@ -2981,13 +2981,14 @@ function initLKSelects() {
 }
 
 function showSubTab(page, tab, el) {
-  document.querySelectorAll(`#pg-${page} .sub-tab`).forEach(b => b.classList.remove('active'));
-  document.querySelectorAll(`#pg-${page} .sub-page`).forEach(p => p.style.display = 'none');
+  document.querySelectorAll('#pg-' + page + ' .sub-tab').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('#pg-' + page + ' .sub-page').forEach(p => p.style.display = 'none');
   if (el) el.classList.add('active');
-  document.getElementById(`${page}-${tab}`).style.display = 'block';
-  if (page === 'lk') renderLKLog(tab);
-  if (page === 'sdacha') renderSdachaLog(tab);
-  if (page === 'content') renderContentLog(tab);
+  const target = document.getElementById(page + '-' + tab);
+  if (target) target.style.display = 'block';
+  if (page === 'lk') { initLKSelects(); renderLKLog(tab); }
+  if (page === 'sdacha') { initLKSelects(); renderSdachaLog(tab); }
+  if (page === 'content') { initContentSelects(); renderContentLog(tab); }
 }
 
 function renderLKLog(type) {
