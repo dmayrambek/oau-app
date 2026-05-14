@@ -1967,6 +1967,13 @@ function renderAdminStats() {
                   <td style="padding:12px 14px; border-bottom:1px solid var(--border); text-align:center; font-weight:700;">${r.total}</td>
                 </tr>`;
               }).join('')}
+              <tr style="background:var(--accent-light); border-top:2px solid var(--border2);">
+                <td style="padding:12px 14px; font-weight:700; color:var(--accent2);">Итого</td>
+                <td style="padding:12px 14px; text-align:center; font-weight:700; color:#60a5fa;">${bonusMonthRows.reduce((s,r)=>s+(r.work||0),0)||'—'}</td>
+                <td style="padding:12px 14px; text-align:center; font-weight:700; color:#34d399;">${bonusMonthRows.reduce((s,r)=>s+(r.done||0),0)||'—'}</td>
+                <td style="padding:12px 14px; text-align:center; font-weight:700; color:#f87171;">${bonusMonthRows.reduce((s,r)=>s+(r.skip||0),0)||'—'}</td>
+                <td style="padding:12px 14px; text-align:center; font-weight:700; color:var(--text); font-size:15px;">${bonusMonthRows.reduce((s,r)=>s+r.total,0)}</td>
+              </tr>
             </tbody>
           </table>
         </div>
@@ -1978,6 +1985,66 @@ function renderAdminStats() {
     </div>`;
 
   document.getElementById('adminStatsContent').innerHTML += bonusBlock;
+
+  // LK STATS BLOCK
+  const LK_TYPE_NAMES = { mfs: 'ЛК в MFS', omarket: 'ЛК О!Маркет', mcom: 'ЛК m-Com', gift: 'ЛК Gift' };
+  const SDACHA_TYPE_NAMES = { gte: 'GTE', dce: 'DCE' };
+
+  function buildTypeBlock(title, items, typeNames, icon) {
+    const rows = Object.entries(typeNames).map(([type, label]) => {
+      const typeItems = items.filter(i => i.type === type && i.createdAt?.substring(0,7) === selMk);
+      const byEmp = {};
+      LK_EMPLOYEES.forEach(e => byEmp[e] = 0);
+      typeItems.forEach(i => byEmp[i.emp] = (byEmp[i.emp]||0) + (i.qty||0));
+      const total = typeItems.reduce((s,i) => s+(i.qty||0), 0);
+      return { label, byEmp, total };
+    });
+
+    const grandTotal = rows.reduce((s,r) => s+r.total, 0);
+    if (!grandTotal) return `
+      <div style="margin-top:2rem;">
+        <div style="font-family:'Syne',sans-serif; font-size:16px; font-weight:700; letter-spacing:-0.02em; margin-bottom:0.5rem;">${icon} ${title}</div>
+        <div class="card"><div class="empty"><div class="empty-icon">${icon}</div><div class="empty-title">Нет данных за этот период</div></div></div>
+      </div>`;
+
+    return `
+      <div style="margin-top:2rem;">
+        <div style="font-family:'Syne',sans-serif; font-size:16px; font-weight:700; letter-spacing:-0.02em; margin-bottom:1rem;">${icon} ${title}</div>
+        <div class="card">
+          <div style="overflow-x:auto;">
+            <table style="width:100%; border-collapse:collapse; font-size:13px;">
+              <thead>
+                <tr style="background:var(--surface2);">
+                  <th style="text-align:left; padding:10px 14px; border-bottom:1px solid var(--border); font-size:11px; font-weight:600; letter-spacing:0.06em; text-transform:uppercase; color:var(--text3);">Тип</th>
+                  ${LK_EMPLOYEES.map(e => `<th style="text-align:center; padding:10px 14px; border-bottom:1px solid var(--border); font-size:11px; font-weight:600; letter-spacing:0.06em; text-transform:uppercase; color:var(--text3);">${e.split(' ')[1]}</th>`).join('')}
+                  <th style="text-align:center; padding:10px 14px; border-bottom:1px solid var(--border); font-size:11px; font-weight:600; letter-spacing:0.06em; text-transform:uppercase; color:var(--text3);">Итого</th>
+                </tr>
+              </thead>
+              <tbody>
+                ${rows.filter(r => r.total > 0).map((r,i) => `
+                  <tr style="${i%2===0?'':'background:var(--surface2)'}">
+                    <td style="padding:12px 14px; border-bottom:1px solid var(--border); font-weight:600;">${r.label}</td>
+                    ${LK_EMPLOYEES.map(e => `<td style="padding:12px 14px; border-bottom:1px solid var(--border); text-align:center; color:var(--accent2); font-weight:500;">${r.byEmp[e]||'—'}</td>`).join('')}
+                    <td style="padding:12px 14px; border-bottom:1px solid var(--border); text-align:center; font-weight:700;">${r.total}</td>
+                  </tr>`).join('')}
+                <tr style="background:var(--accent-light); border-top:2px solid var(--border2);">
+                  <td style="padding:12px 14px; font-weight:700; color:var(--accent2);">Итого</td>
+                  ${LK_EMPLOYEES.map(e => {
+                    const empTotal = rows.reduce((s,r) => s+(r.byEmp[e]||0), 0);
+                    return `<td style="padding:12px 14px; text-align:center; font-weight:700; color:var(--accent2);">${empTotal||'—'}</td>`;
+                  }).join('')}
+                  <td style="padding:12px 14px; text-align:center; font-weight:700; color:var(--text); font-size:15px;">${grandTotal}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>`;
+  }
+
+  const lkBlock = buildTypeBlock('Открытие ЛК', lkItems, LK_TYPE_NAMES, '🔑');
+  const sdachaBlock = buildTypeBlock('Сдача в архив', sdachaItems, SDACHA_TYPE_NAMES, '📦');
+  document.getElementById('adminStatsContent').innerHTML += lkBlock + sdachaBlock;
 }
 
 function exportBonusExcel(selMk) {
