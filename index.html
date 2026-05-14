@@ -2244,9 +2244,11 @@ function updateTypeSuggestions() {
 }
 
 function showPage(p, el) {
+  const target = document.getElementById('pg-'+p);
+  if (!target) { console.error('Page not found: pg-'+p); return; }
   document.querySelectorAll('.page').forEach(pg => pg.classList.remove('active'));
   document.querySelectorAll('.nav-item, .mobile-nav-item').forEach(b => b.classList.remove('active'));
-  document.getElementById('pg-'+p).classList.add('active');
+  target.classList.add('active');
   if (el) el.classList.add('active');
 
   if (p === 'tasks') { renderTasks(); renderStats(); }
