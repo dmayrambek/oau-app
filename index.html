@@ -2865,19 +2865,7 @@ function renderLKLog(type) {
     return;
   }
 
-  // Stats
-  const byEmp = {};
-  LK_EMPLOYEES.forEach(e => byEmp[e] = 0);
-  list.forEach(i => byEmp[i.emp] = (byEmp[i.emp]||0) + (i.qty||0));
-  const total = list.reduce((s,i) => s + (i.qty||0), 0);
-
   el.innerHTML = `
-    <div class="stats-row" style="margin-bottom:1rem;">
-      <div class="stat-card"><div class="stat-num">${total}</div><div class="stat-label">Всего за всё время</div></div>
-      ${LK_EMPLOYEES.filter(e => byEmp[e]>0).map(e => `
-        <div class="stat-card"><div class="stat-num">${byEmp[e]}</div><div class="stat-label">${e.split(' ')[0]}</div></div>
-      `).join('')}
-    </div>
     <div class="lk-log-table">
       <div class="lk-log-row lk-header">
         <div>Сотрудник</div><div>Кол-во</div><div>Дата</div><div></div>
@@ -2902,18 +2890,7 @@ function renderSdachaLog(type) {
     return;
   }
 
-  const byEmp = {};
-  LK_EMPLOYEES.forEach(e => byEmp[e] = 0);
-  list.forEach(i => byEmp[i.emp] = (byEmp[i.emp]||0) + (i.qty||0));
-  const total = list.reduce((s,i) => s + (i.qty||0), 0);
-
   el.innerHTML = `
-    <div class="stats-row" style="margin-bottom:1rem;">
-      <div class="stat-card"><div class="stat-num">${total}</div><div class="stat-label">Всего за всё время</div></div>
-      ${LK_EMPLOYEES.filter(e => byEmp[e]>0).map(e => `
-        <div class="stat-card"><div class="stat-num">${byEmp[e]}</div><div class="stat-label">${e.split(' ')[0]}</div></div>
-      `).join('')}
-    </div>
     <div class="lk-log-table">
       <div class="lk-log-row lk-header">
         <div>Сотрудник</div><div>Кол-во</div><div>Дата</div><div></div>
