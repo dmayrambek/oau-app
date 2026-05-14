@@ -1914,7 +1914,7 @@ function renderAdminStats() {
     const lKey = login + '_' + selMk;
     const label = labels[lKey] || '';
     return { login, name: u.name, total: empTasks.length, hours, done, global, open, work, label };
-  }).filter(r => r.total > 0).sort((a,b) => b.hours - a.hours);
+  }).filter(r => r.total > 0).sort((a,b) => b.total - a.total);
 
   // Summary cards
   const totalTasks = filtered.length;
@@ -1985,9 +1985,7 @@ function renderAdminStats() {
     const bwork = empBonus.filter(b => b.status === 'work').length;
     const bskip = empBonus.filter(b => b.status === 'skip').length;
     return { name: u.name, total: empBonus.length, done: bdone, work: bwork, skip: bskip };
-  }).filter(r => r.total > 0).sort((a,b) => b.done - a.done);
-
-  const totalBonusDone = bonusItems.filter(b => b.status === 'done' && !b.category && b.importedAt?.substring(0,7) === selMk).length;
+  }).filter(r => r.total > 0).sort((a,b) => b.done - a.done); = bonusItems.filter(b => b.status === 'done' && !b.category && b.importedAt?.substring(0,7) === selMk).length;
   const totalBonusOpen = bonusItems.filter(b => b.status === 'open' && !b.category && b.importedAt?.substring(0,7) === selMk).length;
   const totalBonusAll = bonusItems.filter(b => !b.category && b.importedAt?.substring(0,7) === selMk).length;
   const totalBonusExcluded = bonusItems.filter(b => b.category && b.importedAt?.substring(0,7) === selMk).length;
@@ -2086,7 +2084,7 @@ function renderAdminStats() {
                 </tr>
               </thead>
               <tbody>
-                ${rows.filter(r => r.total > 0).map((r,i) => `
+                ${rows.filter(r => r.total > 0).sort((a,b) => b.total - a.total).map((r,i) => `
                   <tr style="${i%2===0?'':'background:var(--surface2)'}">
                     <td style="padding:12px 14px; border-bottom:1px solid var(--border); font-weight:600;">${r.label}</td>
                     ${LK_EMPLOYEES.map(e => `<td style="padding:12px 14px; border-bottom:1px solid var(--border); text-align:center; color:var(--accent2); font-weight:500;">${r.byEmp[e]||'—'}</td>`).join('')}
