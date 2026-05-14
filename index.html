@@ -735,6 +735,43 @@ body {
 .kb-view-content ol { padding-left: 1.5rem; margin: 0.5rem 0; }
 .kb-view-content li { margin-bottom: 4px; }
 
+.sub-tab {
+  padding: 7px 16px;
+  border-radius: var(--radius-xs);
+  border: 1px solid var(--border2);
+  background: var(--surface);
+  color: var(--text2);
+  font-family: 'Inter', sans-serif;
+  font-size: 13px; font-weight: 500;
+  cursor: pointer; transition: all 0.12s;
+}
+.sub-tab:hover { background: var(--surface2); color: var(--text); }
+.sub-tab.active {
+  background: var(--accent-light);
+  border-color: rgba(94,106,210,0.3);
+  color: var(--accent2); font-weight: 600;
+}
+
+.lk-log-table {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.lk-log-row {
+  display: grid;
+  grid-template-columns: 1fr 80px 150px 50px;
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border);
+  font-size: 13px;
+  align-items: center;
+  gap: 8px;
+}
+
+.lk-log-row:last-child { border-bottom: none; }
+.lk-log-row.lk-header { background: var(--surface2); font-size: 11px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; color: var(--text3); }
+
 @keyframes fadeIn {
   from { opacity: 0; transform: translateY(6px); }
   to { opacity: 1; transform: translateY(0); }
@@ -810,10 +847,16 @@ body {
         <span class="ni">✦</span> Мои задачи
       </button>
       <button class="nav-item" onclick="showPage('archive', this)" id="navArchive">
-        <span class="ni">◫</span> Архив
+        <span class="ni">◫</span> Архив задач
       </button>
       <button class="nav-item" onclick="showPage('bonus', this)" id="navBonus">
         <span class="ni">◈</span> О!Бонус CRM <span id="bonusBadge" style="display:none; background:#5e6ad2; color:#fff; font-size:10px; font-weight:600; padding:1px 6px; border-radius:99px; margin-left:4px;"></span>
+      </button>
+      <button class="nav-item" onclick="showPage('lk', this)" id="navLK">
+        <span class="ni">🔑</span> Открытие ЛК
+      </button>
+      <button class="nav-item" onclick="showPage('sdacha', this)" id="navSdacha">
+        <span class="ni">📦</span> Сдача в архив
       </button>
       <button class="nav-item" onclick="showPage('kb', this)" id="navKB">
         <span class="ni">📖</span> База Знаний
@@ -963,7 +1006,126 @@ body {
         <div id="bonusList"></div>
       </div>
 
-      <!-- KNOWLEDGE BASE PAGE -->
+      <!-- ОТКРЫТИЕ ЛК PAGE -->
+      <div id="pg-lk" class="page fade-in">
+        <div class="page-header">
+          <div>
+            <h2 class="page-title">Открытие ЛК</h2>
+            <p class="page-sub">Учёт открытых личных кабинетов</p>
+          </div>
+        </div>
+
+        <!-- SUB TABS -->
+        <div style="display:flex; gap:6px; margin-bottom:1.5rem; flex-wrap:wrap;">
+          <button class="sub-tab active" onclick="showSubTab('lk','mfs',this)">ЛК в MFS</button>
+          <button class="sub-tab" onclick="showSubTab('lk','omarket',this)">ЛК О!Маркет</button>
+          <button class="sub-tab" onclick="showSubTab('lk','mcom',this)">ЛК m-Com</button>
+          <button class="sub-tab" onclick="showSubTab('lk','gift',this)">ЛК Gift</button>
+        </div>
+
+        <div id="lk-mfs" class="sub-page">
+          <div class="card" style="max-width:480px; margin-bottom:1.25rem;">
+            <div class="form-title">ЛК в MFS</div>
+            <div class="field"><label class="f-label">Сотрудник</label>
+              <select class="f-select" id="lk-mfs-emp"><option value="">— Выберите —</option></select>
+            </div>
+            <div class="field"><label class="f-label">Количество</label>
+              <input type="number" class="f-input" id="lk-mfs-qty" min="1" placeholder="0">
+            </div>
+            <button class="btn btn-primary" onclick="saveLK('mfs')">Сохранить</button>
+          </div>
+          <div id="lk-mfs-log"></div>
+        </div>
+
+        <div id="lk-omarket" class="sub-page" style="display:none;">
+          <div class="card" style="max-width:480px; margin-bottom:1.25rem;">
+            <div class="form-title">ЛК О!Маркет</div>
+            <div class="field"><label class="f-label">Сотрудник</label>
+              <select class="f-select" id="lk-omarket-emp"><option value="">— Выберите —</option></select>
+            </div>
+            <div class="field"><label class="f-label">Количество</label>
+              <input type="number" class="f-input" id="lk-omarket-qty" min="1" placeholder="0">
+            </div>
+            <button class="btn btn-primary" onclick="saveLK('omarket')">Сохранить</button>
+          </div>
+          <div id="lk-omarket-log"></div>
+        </div>
+
+        <div id="lk-mcom" class="sub-page" style="display:none;">
+          <div class="card" style="max-width:480px; margin-bottom:1.25rem;">
+            <div class="form-title">ЛК m-Com</div>
+            <div class="field"><label class="f-label">Сотрудник</label>
+              <select class="f-select" id="lk-mcom-emp"><option value="">— Выберите —</option></select>
+            </div>
+            <div class="field"><label class="f-label">Количество</label>
+              <input type="number" class="f-input" id="lk-mcom-qty" min="1" placeholder="0">
+            </div>
+            <button class="btn btn-primary" onclick="saveLK('mcom')">Сохранить</button>
+          </div>
+          <div id="lk-mcom-log"></div>
+        </div>
+
+        <div id="lk-gift" class="sub-page" style="display:none;">
+          <div class="card" style="max-width:480px; margin-bottom:1.25rem;">
+            <div class="form-title">ЛК Gift</div>
+            <div class="field"><label class="f-label">Сотрудник</label>
+              <select class="f-select" id="lk-gift-emp"><option value="">— Выберите —</option></select>
+            </div>
+            <div class="field"><label class="f-label">Количество</label>
+              <input type="number" class="f-input" id="lk-gift-qty" min="1" placeholder="0">
+            </div>
+            <button class="btn btn-primary" onclick="saveLK('gift')">Сохранить</button>
+          </div>
+          <div id="lk-gift-log"></div>
+        </div>
+      </div>
+
+      <!-- СДАЧА В АРХИВ PAGE -->
+      <div id="pg-sdacha" class="page fade-in">
+        <div class="page-header">
+          <div>
+            <h2 class="page-title">Сдача в архив</h2>
+            <p class="page-sub">Учёт сданных в архив документов</p>
+          </div>
+        </div>
+
+        <div style="display:flex; gap:6px; margin-bottom:1.5rem; flex-wrap:wrap;">
+          <button class="sub-tab active" onclick="showSubTab('sdacha','gte',this)">GTE</button>
+          <button class="sub-tab" onclick="showSubTab('sdacha','dce',this)">DCE</button>
+        </div>
+
+        <div id="sdacha-gte" class="sub-page">
+          <div class="card" style="max-width:480px; margin-bottom:1.25rem;">
+            <div class="form-title">GTE</div>
+            <div class="field"><label class="f-label">Сотрудник</label>
+              <select class="f-select" id="sdacha-gte-emp"><option value="">— Выберите —</option></select>
+            </div>
+            <div class="field"><label class="f-label">Количество</label>
+              <input type="number" class="f-input" id="sdacha-gte-qty" min="1" placeholder="0">
+            </div>
+            <button class="btn btn-primary" onclick="saveSdacha('gte')">Сохранить</button>
+          </div>
+          <div id="sdacha-gte-log"></div>
+        </div>
+
+        <div id="sdacha-dce" class="sub-page" style="display:none;">
+          <div class="card" style="max-width:480px; margin-bottom:1.25rem;">
+            <div class="form-title">DCE</div>
+            <div class="field"><label class="f-label">Сотрудник</label>
+              <select class="f-select" id="sdacha-dce-emp"><option value="">— Выберите —</option></select>
+            </div>
+            <div class="field"><label class="f-label">Количество</label>
+              <input type="number" class="f-input" id="sdacha-dce-qty" min="1" placeholder="0">
+            </div>
+            <button class="btn btn-primary" onclick="saveSdacha('dce')">Сохранить</button>
+          </div>
+          <div id="sdacha-dce-log"></div>
+        </div>
+      </div>
+
+    </main>
+  </div>
+</div>
       <div id="pg-kb" class="page fade-in">
         <div class="page-header">
           <div>
@@ -1304,13 +1466,13 @@ async function startApp() {
     if (navTasks) navTasks.innerHTML = '<span class="ni">✦</span> Все задачи';
   }
 
-  await Promise.all([loadTasks(), loadLabels(), loadBonusItems(), loadKBArticles()]);
+  await Promise.all([loadTasks(), loadLabels(), loadBonusItems(), loadKBArticles(), loadLKItems(), loadSdachaItems()]);
   renderTasks();
   renderStats();
   updateTypeSuggestions();
   renderBonusNav();
   updateThemeBtn(localStorage.getItem('oau_theme') || 'standard');
-  // Убедиться что tasks страница активна
+  initLKSelects();
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.getElementById('pg-tasks').classList.add('active');
 }
@@ -1962,7 +2124,9 @@ function showPage(p, el) {
   if (p === 'adminStats') renderAdminStats();
   if (p === 'bonus') renderBonus();
   if (p === 'kb') renderKB();
-  if (p === 'kb-view') {} // rendered before showPage call
+  if (p === 'kb-view') {}
+  if (p === 'lk') { initLKSelects(); renderLKLog('mfs'); }
+  if (p === 'sdacha') { initLKSelects(); renderSdachaLog('gte'); }
 }
 
 function exportExcel() {
@@ -2636,6 +2800,180 @@ async function deleteKBArticle(id) {
   }
 }
 
+// LK & SDACHA
+const LK_EMPLOYEES = ['Алымова Айтумар', 'Алымова Бойтумар', 'Джолдошбекова Сезим', 'Омурбекова Тумара', 'Чекирова Самара'];
+
+const LK_TYPES = { mfs: 'ЛК в MFS', omarket: 'ЛК О!Маркет', mcom: 'ЛК m-Com', gift: 'ЛК Gift' };
+const SDACHA_TYPES = { gte: 'GTE', dce: 'DCE' };
+
+let lkItems = [];
+let sdachaItems = [];
+
+async function loadLKItems() {
+  try {
+    const q = query(collection(db, 'oau_lk'), orderBy('createdAt', 'desc'));
+    const snap = await getDocs(q);
+    lkItems = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  } catch(e) { lkItems = []; }
+}
+
+async function loadSdachaItems() {
+  try {
+    const q = query(collection(db, 'oau_sdacha'), orderBy('createdAt', 'desc'));
+    const snap = await getDocs(q);
+    sdachaItems = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  } catch(e) { sdachaItems = []; }
+}
+
+function initLKSelects() {
+  ['mfs','omarket','mcom','gift'].forEach(type => {
+    const sel = document.getElementById('lk-'+type+'-emp');
+    if (!sel || sel.children.length > 1) return;
+    LK_EMPLOYEES.forEach(emp => {
+      const o = document.createElement('option');
+      o.value = emp; o.textContent = emp;
+      sel.appendChild(o);
+    });
+  });
+  ['gte','dce'].forEach(type => {
+    const sel = document.getElementById('sdacha-'+type+'-emp');
+    if (!sel || sel.children.length > 1) return;
+    LK_EMPLOYEES.forEach(emp => {
+      const o = document.createElement('option');
+      o.value = emp; o.textContent = emp;
+      sel.appendChild(o);
+    });
+  });
+}
+
+function showSubTab(page, tab, el) {
+  document.querySelectorAll(`#pg-${page} .sub-tab`).forEach(b => b.classList.remove('active'));
+  document.querySelectorAll(`#pg-${page} .sub-page`).forEach(p => p.style.display = 'none');
+  if (el) el.classList.add('active');
+  document.getElementById(`${page}-${tab}`).style.display = 'block';
+  if (page === 'lk') renderLKLog(tab);
+  if (page === 'sdacha') renderSdachaLog(tab);
+}
+
+function renderLKLog(type) {
+  const el = document.getElementById('lk-'+type+'-log');
+  if (!el) return;
+  const list = lkItems.filter(i => i.type === type);
+
+  if (!list.length) {
+    el.innerHTML = `<div class="empty"><div class="empty-icon">📋</div><div class="empty-title">Записей нет</div></div>`;
+    return;
+  }
+
+  // Stats
+  const byEmp = {};
+  LK_EMPLOYEES.forEach(e => byEmp[e] = 0);
+  list.forEach(i => byEmp[i.emp] = (byEmp[i.emp]||0) + (i.qty||0));
+  const total = list.reduce((s,i) => s + (i.qty||0), 0);
+
+  el.innerHTML = `
+    <div class="stats-row" style="margin-bottom:1rem;">
+      <div class="stat-card"><div class="stat-num">${total}</div><div class="stat-label">Всего за всё время</div></div>
+      ${LK_EMPLOYEES.filter(e => byEmp[e]>0).map(e => `
+        <div class="stat-card"><div class="stat-num">${byEmp[e]}</div><div class="stat-label">${e.split(' ')[0]}</div></div>
+      `).join('')}
+    </div>
+    <div class="lk-log-table">
+      <div class="lk-log-row lk-header">
+        <div>Сотрудник</div><div>Кол-во</div><div>Дата</div><div></div>
+      </div>
+      ${list.map(i => `
+        <div class="lk-log-row">
+          <div style="font-weight:500;">${i.emp}</div>
+          <div style="font-weight:700; color:var(--accent2);">${i.qty}</div>
+          <div style="color:var(--text3); font-size:12px;">${new Date(i.createdAt).toLocaleDateString('ru-RU', {day:'numeric',month:'long',year:'numeric'})}</div>
+          <div><button class="btn btn-sm btn-danger" onclick="deleteLKItem('${i.id}','${type}')">✕</button></div>
+        </div>`).join('')}
+    </div>`;
+}
+
+function renderSdachaLog(type) {
+  const el = document.getElementById('sdacha-'+type+'-log');
+  if (!el) return;
+  const list = sdachaItems.filter(i => i.type === type);
+
+  if (!list.length) {
+    el.innerHTML = `<div class="empty"><div class="empty-icon">📦</div><div class="empty-title">Записей нет</div></div>`;
+    return;
+  }
+
+  const byEmp = {};
+  LK_EMPLOYEES.forEach(e => byEmp[e] = 0);
+  list.forEach(i => byEmp[i.emp] = (byEmp[i.emp]||0) + (i.qty||0));
+  const total = list.reduce((s,i) => s + (i.qty||0), 0);
+
+  el.innerHTML = `
+    <div class="stats-row" style="margin-bottom:1rem;">
+      <div class="stat-card"><div class="stat-num">${total}</div><div class="stat-label">Всего за всё время</div></div>
+      ${LK_EMPLOYEES.filter(e => byEmp[e]>0).map(e => `
+        <div class="stat-card"><div class="stat-num">${byEmp[e]}</div><div class="stat-label">${e.split(' ')[0]}</div></div>
+      `).join('')}
+    </div>
+    <div class="lk-log-table">
+      <div class="lk-log-row lk-header">
+        <div>Сотрудник</div><div>Кол-во</div><div>Дата</div><div></div>
+      </div>
+      ${list.map(i => `
+        <div class="lk-log-row">
+          <div style="font-weight:500;">${i.emp}</div>
+          <div style="font-weight:700; color:var(--accent2);">${i.qty}</div>
+          <div style="color:var(--text3); font-size:12px;">${new Date(i.createdAt).toLocaleDateString('ru-RU', {day:'numeric',month:'long',year:'numeric'})}</div>
+          <div><button class="btn btn-sm btn-danger" onclick="deleteSdachaItem('${i.id}','${type}')">✕</button></div>
+        </div>`).join('')}
+    </div>`;
+}
+
+async function saveLK(type) {
+  const emp = document.getElementById('lk-'+type+'-emp').value;
+  const qty = parseInt(document.getElementById('lk-'+type+'-qty').value);
+  if (!emp || !qty || qty < 1) { alert('Выберите сотрудника и укажите количество'); return; }
+
+  const data = { type, emp, qty, createdAt: new Date().toISOString() };
+  try {
+    const ref = await addDoc(collection(db, 'oau_lk'), data);
+    lkItems.unshift({ id: ref.id, ...data });
+  } catch(e) { console.error(e); }
+
+  document.getElementById('lk-'+type+'-emp').value = '';
+  document.getElementById('lk-'+type+'-qty').value = '';
+  renderLKLog(type);
+}
+
+async function saveSdacha(type) {
+  const emp = document.getElementById('sdacha-'+type+'-emp').value;
+  const qty = parseInt(document.getElementById('sdacha-'+type+'-qty').value);
+  if (!emp || !qty || qty < 1) { alert('Выберите сотрудника и укажите количество'); return; }
+
+  const data = { type, emp, qty, createdAt: new Date().toISOString() };
+  try {
+    const ref = await addDoc(collection(db, 'oau_sdacha'), data);
+    sdachaItems.unshift({ id: ref.id, ...data });
+  } catch(e) { console.error(e); }
+
+  document.getElementById('sdacha-'+type+'-emp').value = '';
+  document.getElementById('sdacha-'+type+'-qty').value = '';
+  renderSdachaLog(type);
+}
+
+async function deleteLKItem(id, type) {
+  if (!confirm('Удалить запись?')) return;
+  lkItems = lkItems.filter(i => i.id !== id);
+  renderLKLog(type);
+  try { await deleteDoc(doc(db, 'oau_lk', id)); } catch(e) { await loadLKItems(); renderLKLog(type); }
+}
+
+async function deleteSdachaItem(id, type) {
+  if (!confirm('Удалить запись?')) return;
+  sdachaItems = sdachaItems.filter(i => i.id !== id);
+  renderSdachaLog(type);
+  try { await deleteDoc(doc(db, 'oau_sdacha', id)); } catch(e) { await loadSdachaItems(); renderSdachaLog(type); }
+}
+
 // EXPOSE GLOBALS
 window.showPage = showPage;
 window.doLogin = doLogin;
@@ -2666,7 +3004,11 @@ window.backToStatusButtons = backToStatusButtons;
 window.closeBonusStatusModal = closeBonusStatusModal;
 window.closeBonusStatusOutside = closeBonusStatusOutside;
 window.setBonusStatus = setBonusStatus;
-window.toggleTheme = toggleTheme;
+window.showSubTab = showSubTab;
+window.saveLK = saveLK;
+window.saveSdacha = saveSdacha;
+window.deleteLKItem = deleteLKItem;
+window.deleteSdachaItem = deleteSdachaItem;
 window.renderKB = renderKB;
 window.openKBModal = openKBModal;
 window.openKBEdit = openKBEdit;
