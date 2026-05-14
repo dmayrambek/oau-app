@@ -2066,7 +2066,14 @@ function renderAdminStats() {
       const total = typeItems.reduce((s,i) => s+(i.qty||0), 0);
       return { label, byEmp, total };
     });
+
+    const grandTotal = rows.reduce((s,r) => s+r.total, 0);
+
     if (!grandTotal) return `
+      <div style="margin-top:2rem;">
+        <div style="font-family:'Syne',sans-serif; font-size:16px; font-weight:700; letter-spacing:-0.02em; margin-bottom:0.5rem;">${icon} ${title}</div>
+        <div class="card"><div class="empty"><div class="empty-icon">${icon}</div><div class="empty-title">Нет данных за этот период</div></div></div>
+      </div>`;
       <div style="margin-top:2rem;">
         <div style="font-family:'Syne',sans-serif; font-size:16px; font-weight:700; letter-spacing:-0.02em; margin-bottom:0.5rem;">${icon} ${title}</div>
         <div class="card"><div class="empty"><div class="empty-icon">${icon}</div><div class="empty-title">Нет данных за этот период</div></div></div>
