@@ -1985,7 +1985,9 @@ function renderAdminStats() {
     const bwork = empBonus.filter(b => b.status === 'work').length;
     const bskip = empBonus.filter(b => b.status === 'skip').length;
     return { name: u.name, total: empBonus.length, done: bdone, work: bwork, skip: bskip };
-  }).filter(r => r.total > 0).sort((a,b) => b.done - a.done); = bonusItems.filter(b => b.status === 'done' && !b.category && b.importedAt?.substring(0,7) === selMk).length;
+  }).filter(r => r.total > 0).sort((a,b) => b.done - a.done);
+
+  const totalBonusDone = bonusItems.filter(b => b.status === 'done' && !b.category && b.importedAt?.substring(0,7) === selMk).length;
   const totalBonusOpen = bonusItems.filter(b => b.status === 'open' && !b.category && b.importedAt?.substring(0,7) === selMk).length;
   const totalBonusAll = bonusItems.filter(b => !b.category && b.importedAt?.substring(0,7) === selMk).length;
   const totalBonusExcluded = bonusItems.filter(b => b.category && b.importedAt?.substring(0,7) === selMk).length;
