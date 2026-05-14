@@ -858,6 +858,9 @@ body {
       <button class="nav-item" onclick="showPage('sdacha', this)" id="navSdacha">
         <span class="ni">📦</span> Сдача в архив
       </button>
+      <button class="nav-item" onclick="showPage('content', this)" id="navContent">
+        <span class="ni">🛒</span> Контент О!Маркет
+      </button>
       <button class="nav-item" onclick="showPage('kb', this)" id="navKB">
         <span class="ni">📖</span> База Знаний
       </button>
@@ -1123,6 +1126,75 @@ body {
         </div>
       </div>
 
+      <!-- КОНТЕНТ О!МАРКЕТ PAGE -->
+      <div id="pg-content" class="page fade-in">
+        <div class="page-header">
+          <div>
+            <h2 class="page-title">Контент О!Маркет</h2>
+            <p class="page-sub">Учёт контентной работы</p>
+          </div>
+        </div>
+        <div style="display:flex; gap:6px; margin-bottom:1.5rem; flex-wrap:wrap;">
+          <button class="sub-tab active" onclick="showSubTab('content','new',this)">Новые карточки</button>
+          <button class="sub-tab" onclick="showSubTab('content','fix',this)">Исправление</button>
+          <button class="sub-tab" onclick="showSubTab('content','edit',this)">Редактирование</button>
+          <button class="sub-tab" onclick="showSubTab('content','price',this)">Актуализация цен</button>
+        </div>
+        <div id="content-new" class="sub-page">
+          <div class="card" style="max-width:480px; margin-bottom:1.25rem;">
+            <div class="form-title">Новые карточки</div>
+            <div class="field"><label class="f-label">Сотрудник</label>
+              <select class="f-select" id="content-new-emp"><option value="">— Выберите —</option></select>
+            </div>
+            <div class="field"><label class="f-label">Количество</label>
+              <input type="number" class="f-input" id="content-new-qty" min="1" placeholder="0">
+            </div>
+            <button class="btn btn-primary" onclick="saveContent('new')">Сохранить</button>
+          </div>
+          <div id="content-new-log"></div>
+        </div>
+        <div id="content-fix" class="sub-page" style="display:none;">
+          <div class="card" style="max-width:480px; margin-bottom:1.25rem;">
+            <div class="form-title">Исправление</div>
+            <div class="field"><label class="f-label">Сотрудник</label>
+              <select class="f-select" id="content-fix-emp"><option value="">— Выберите —</option></select>
+            </div>
+            <div class="field"><label class="f-label">Количество</label>
+              <input type="number" class="f-input" id="content-fix-qty" min="1" placeholder="0">
+            </div>
+            <button class="btn btn-primary" onclick="saveContent('fix')">Сохранить</button>
+          </div>
+          <div id="content-fix-log"></div>
+        </div>
+        <div id="content-edit" class="sub-page" style="display:none;">
+          <div class="card" style="max-width:480px; margin-bottom:1.25rem;">
+            <div class="form-title">Редактирование</div>
+            <div class="field"><label class="f-label">Сотрудник</label>
+              <select class="f-select" id="content-edit-emp"><option value="">— Выберите —</option></select>
+            </div>
+            <div class="field"><label class="f-label">Количество</label>
+              <input type="number" class="f-input" id="content-edit-qty" min="1" placeholder="0">
+            </div>
+            <button class="btn btn-primary" onclick="saveContent('edit')">Сохранить</button>
+          </div>
+          <div id="content-edit-log"></div>
+        </div>
+        <div id="content-price" class="sub-page" style="display:none;">
+          <div class="card" style="max-width:480px; margin-bottom:1.25rem;">
+            <div class="form-title">Актуализация цен</div>
+            <div class="field"><label class="f-label">Сотрудник</label>
+              <select class="f-select" id="content-price-emp"><option value="">— Выберите —</option></select>
+            </div>
+            <div class="field"><label class="f-label">Количество</label>
+              <input type="number" class="f-input" id="content-price-qty" min="1" placeholder="0">
+            </div>
+            <button class="btn btn-primary" onclick="saveContent('price')">Сохранить</button>
+          </div>
+          <div id="content-price-log"></div>
+        </div>
+      </div>
+
+      <!-- БАЗА ЗНАНИЙ PAGE -->
       <div id="pg-kb" class="page fade-in">
         <div class="page-header">
           <div>
@@ -1461,7 +1533,7 @@ async function startApp() {
     if (navTasks) navTasks.innerHTML = '<span class="ni">✦</span> Все задачи';
   }
 
-  await Promise.all([loadTasks(), loadLabels(), loadBonusItems(), loadKBArticles(), loadLKItems(), loadSdachaItems()]);
+  await Promise.all([loadTasks(), loadLabels(), loadBonusItems(), loadKBArticles(), loadLKItems(), loadSdachaItems(), loadContentItems()]);
   renderTasks();
   renderStats();
   updateTypeSuggestions();
@@ -1994,8 +2066,6 @@ function renderAdminStats() {
       const total = typeItems.reduce((s,i) => s+(i.qty||0), 0);
       return { label, byEmp, total };
     });
-
-    const grandTotal = rows.reduce((s,r) => s+r.total, 0);
     if (!grandTotal) return `
       <div style="margin-top:2rem;">
         <div style="font-family:'Syne',sans-serif; font-size:16px; font-weight:700; letter-spacing:-0.02em; margin-bottom:0.5rem;">${icon} ${title}</div>
@@ -2039,7 +2109,8 @@ function renderAdminStats() {
 
   const lkBlock = buildTypeBlock('Открытие ЛК', lkItems, LK_TYPE_NAMES, '🔑');
   const sdachaBlock = buildTypeBlock('Сдача в архив', sdachaItems, SDACHA_TYPE_NAMES, '📦');
-  document.getElementById('adminStatsContent').innerHTML += lkBlock + sdachaBlock;
+  const contentBlock = buildTypeBlock('Контент О!Маркет', contentItems, CONTENT_TYPES, '🛒');
+  document.getElementById('adminStatsContent').innerHTML += lkBlock + sdachaBlock + contentBlock;
 }
 
 function exportBonusExcel(selMk) {
@@ -2187,8 +2258,9 @@ function showPage(p, el) {
   if (p === 'bonus') renderBonus();
   if (p === 'kb') renderKB();
   if (p === 'kb-view') {}
-  if (p === 'lk') { initLKSelects(); renderLKLog('mfs'); }
   if (p === 'sdacha') { initLKSelects(); renderSdachaLog('gte'); }
+  if (p === 'lk') { initLKSelects(); renderLKLog('mfs'); }
+  if (p === 'content') { initContentSelects(); renderContentLog('new'); }
 }
 
 function exportExcel() {
@@ -2915,6 +2987,7 @@ function showSubTab(page, tab, el) {
   document.getElementById(`${page}-${tab}`).style.display = 'block';
   if (page === 'lk') renderLKLog(tab);
   if (page === 'sdacha') renderSdachaLog(tab);
+  if (page === 'content') renderContentLog(tab);
 }
 
 function renderLKLog(type) {
@@ -3013,6 +3086,74 @@ async function deleteSdachaItem(id, type) {
   try { await deleteDoc(doc(db, 'oau_sdacha', id)); } catch(e) { await loadSdachaItems(); renderSdachaLog(type); }
 }
 
+const CONTENT_TYPES = { new: 'Новые карточки', fix: 'Исправление', edit: 'Редактирование', price: 'Актуализация цен' };
+
+let contentItems = [];
+
+async function loadContentItems() {
+  try {
+    const q = query(collection(db, 'oau_content'), orderBy('createdAt', 'desc'));
+    const snap = await getDocs(q);
+    contentItems = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+  } catch(e) { contentItems = []; }
+}
+
+function initContentSelects() {
+  Object.keys(CONTENT_TYPES).forEach(type => {
+    const sel = document.getElementById('content-'+type+'-emp');
+    if (!sel || sel.children.length > 1) return;
+    LK_EMPLOYEES.forEach(emp => {
+      const o = document.createElement('option');
+      o.value = emp; o.textContent = emp;
+      sel.appendChild(o);
+    });
+  });
+}
+
+function renderContentLog(type) {
+  const el = document.getElementById('content-'+type+'-log');
+  if (!el) return;
+  const list = contentItems.filter(i => i.type === type);
+  if (!list.length) {
+    el.innerHTML = `<div class="empty"><div class="empty-icon">🛒</div><div class="empty-title">Записей нет</div></div>`;
+    return;
+  }
+  el.innerHTML = `
+    <div class="lk-log-table">
+      <div class="lk-log-row lk-header">
+        <div>Сотрудник</div><div>Кол-во</div><div>Дата</div><div></div>
+      </div>
+      ${list.map(i => `
+        <div class="lk-log-row">
+          <div style="font-weight:500;">${i.emp}</div>
+          <div style="font-weight:700; color:var(--accent2);">${i.qty}</div>
+          <div style="color:var(--text3); font-size:12px;">${new Date(i.createdAt).toLocaleDateString('ru-RU', {day:'numeric',month:'long',year:'numeric'})}</div>
+          <div><button class="btn btn-sm btn-danger" onclick="deleteContentItem('${i.id}','${type}')">✕</button></div>
+        </div>`).join('')}
+    </div>`;
+}
+
+async function saveContent(type) {
+  const emp = document.getElementById('content-'+type+'-emp').value;
+  const qty = parseInt(document.getElementById('content-'+type+'-qty').value);
+  if (!emp || !qty || qty < 1) { alert('Выберите сотрудника и укажите количество'); return; }
+  const data = { type, emp, qty, createdAt: new Date().toISOString() };
+  try {
+    const ref = await addDoc(collection(db, 'oau_content'), data);
+    contentItems.unshift({ id: ref.id, ...data });
+  } catch(e) { console.error(e); }
+  document.getElementById('content-'+type+'-emp').value = '';
+  document.getElementById('content-'+type+'-qty').value = '';
+  renderContentLog(type);
+}
+
+async function deleteContentItem(id, type) {
+  if (!confirm('Удалить запись?')) return;
+  contentItems = contentItems.filter(i => i.id !== id);
+  renderContentLog(type);
+  try { await deleteDoc(doc(db, 'oau_content', id)); } catch(e) { await loadContentItems(); renderContentLog(type); }
+}
+
 // EXPOSE GLOBALS
 window.showPage = showPage;
 window.doLogin = doLogin;
@@ -3043,7 +3184,8 @@ window.backToStatusButtons = backToStatusButtons;
 window.closeBonusStatusModal = closeBonusStatusModal;
 window.closeBonusStatusOutside = closeBonusStatusOutside;
 window.setBonusStatus = setBonusStatus;
-window.showSubTab = showSubTab;
+window.saveContent = saveContent;
+window.deleteContentItem = deleteContentItem;
 window.saveLK = saveLK;
 window.saveSdacha = saveSdacha;
 window.deleteLKItem = deleteLKItem;
