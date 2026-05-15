@@ -1329,6 +1329,7 @@ body {
         <option value="charity">❤️ Благотворительные фонды</option>
         <option value="suspicious">⚠️ Сомнительные SID (непонятное название)</option>
         <option value="pawnshop">🏪 Ломбарды</option>
+        <option value="pawnshop">💌 Gift</option>
       </select>
       <div style="display:flex; gap:8px;">
         <button class="btn btn-ghost" onclick="backToStatusButtons()">← Назад</button>
@@ -2424,7 +2425,7 @@ function renderBonus() {
         ${list.map((b,i) => {
           const assignee = b.assignedTo ? (USERS[b.assignedTo]?.name?.split(' ').slice(0,2).join(' ') || b.assignedTo) : '—';
           const date = b.importedAt ? new Date(b.importedAt).toLocaleDateString('ru-RU') : '—';
-          const CATEGORY_NAMES = { banks:'🏦 Банки', taxi:'🚕 Такси', test:'🧪 Тест', charity:'❤️ Фонд', suspicious:'⚠️ Сомнительный', pawnshop:'🏪 Ломбард' };
+          const CATEGORY_NAMES = { banks:'🏦 Банки', taxi:'🚕 Такси', test:'🧪 Тест', charity:'❤️ Фонд', suspicious:'⚠️ Сомнительный', pawnshop:'🏪 Ломбард', gifts:'💌 Gift' };
           const catLabel = b.category ? `<span style="font-size:11px; color:var(--text3); background:var(--surface3); padding:1px 7px; border-radius:4px;">${CATEGORY_NAMES[b.category]||b.category}</span>` : '—';
           return `<tr style="${i%2===0?'':'background:var(--surface2)'}" class="bonus-row">
             <td style="padding:10px 14px; border-bottom:1px solid var(--border); font-weight:500; cursor:pointer;" onclick="openBonusStatus('${b.id}')">${b.name}</td>
